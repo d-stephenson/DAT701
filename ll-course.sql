@@ -153,9 +153,9 @@ FROM Sales.SalesPerson;
 SELECT BusinessEntityID
     , SalesYTD
     , (SELECT MAX(SalesYTD)
-        FROM Sales.SalesPerson) AS HighestSales
+       FROM Sales.SalesPerson) AS HighestSales
     , (SELECT MAX(SalesYTD)
-        FROM Sales.SalesPerson) - SalesYTD AS SalesGap
+       FROM Sales.SalesPerson) - SalesYTD AS SalesGap
 FROM Sales.SalesPerson
 ORDER BY SalesYTD DESC;
 
