@@ -283,12 +283,32 @@ END
 -- Combine Results with Union
 
 SELECT ProductCategoryID
+    , NULL AS ProductSubcategoryID
     , Name 
 FROM Production.ProductCategory
 
 UNION
 
 SELECT ProductSubcayegoryID
+    , ProductSubcayegoryID
     , Name 
 FROM Production.ProductSubcategory;
+
+-- Distinct Rows with Except
+
+SELECT BusinessEntityID
+FROM Person.Person 
+WHERE PersonType <> 'EM'
+
+EXCEPT
+
+SELECT BusinessEntityID
+FROM Sales.PersonCreditCard
+
+    -- Result should be same as above
+
+SELECT Person.BusinessEntityID
+FROM Person.Person LEFT JOIN Sales.PersonCreditCard
+ON Person.BusinessEntityID = PersonCreditCard.BusinessEntityID
+WHERE Person.PersonType <> 'EM' AND PersonCreditCard.CreditCardID IS NULL;
 
