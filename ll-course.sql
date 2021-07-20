@@ -120,7 +120,8 @@ GROUP BY SalesOrderID
 ORDER BY OrderTotal DESC;
 
 SELECT SalesOrderDetail.ProductID
-    , Product.NAMES, SUM(SalesOrderDetail.OrderQty) AS TotalQtySold
+    , Product.NAMES
+    , SUM(SalesOrderDetail.OrderQty) AS TotalQtySold
 FROM Sales.SalesOrderDetail INNER JOIN Production.ProductID
     ON Sales.SalesOrderDetail.ProductID = Production.Product.ProductID
 GROUP BY SalesOrderDetail.ProductID, Product.Name
