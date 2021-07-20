@@ -279,3 +279,16 @@ BEGIN
     SET @Counter = @Counter + 1
     SET @Product = @Product + 10
 END
+
+-- Combine Results with Union
+
+SELECT ProductCategoryID
+    , Name 
+FROM Production.ProductCategory
+
+UNION
+
+SELECT ProductSubcayegoryID
+    , Name 
+FROM Production.ProductSubcategory;
+
