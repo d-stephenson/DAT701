@@ -68,3 +68,18 @@ SELECT BusinessEntityID
     , FORMAT (HireDate, 'd-MMM') AS FormattedDate
 FROM HumanResources.Employee;
 
+-- Return random records with NEWID
+
+SELECT WorkOrderID
+    , NEWID () AS NewID
+FROM Production.WorkOrder;
+
+SELECT WorkOrderID
+    , NEWID () AS NewID
+FROM Production.WorkOrder
+ORDER BY NewID;
+
+SELECT TOP 10 WorkOrderID
+    , NEWID () AS NewID
+FROM Production.WorkOrder
+ORDER BY NewID;
