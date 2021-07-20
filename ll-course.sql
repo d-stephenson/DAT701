@@ -277,7 +277,7 @@ BEGIN
     FROM Production.Product
     WHERE ProductID = @Product;
     SET @Counter = @Counter + 1
-    SET @Product = @Product + 10
+    SET @Product = @Product + 10;
 END
 
 -- Combine Results with Union
@@ -303,7 +303,7 @@ WHERE PersonType <> 'EM'
 EXCEPT
 
 SELECT BusinessEntityID
-FROM Sales.PersonCreditCard
+FROM Sales.PersonCreditCard;
 
     -- Result should be same as above
 
@@ -312,3 +312,27 @@ FROM Person.Person LEFT JOIN Sales.PersonCreditCard
 ON Person.BusinessEntityID = PersonCreditCard.BusinessEntityID
 WHERE Person.PersonType <> 'EM' AND PersonCreditCard.CreditCardID IS NULL;
 
+-- Common Rows with Intersect
+
+SELECT *
+FROM Production.ProductProductPhoto;
+
+SELECT *
+FROM Production.ProductReview;
+
+    -- Using Intersect
+
+SELECT ProductID
+FROM Production.ProductProductPhoto
+
+INTERSECT
+
+SELECT ProductID
+FROM Production.ProductReview
+
+    -- Try this, what is the result
+
+SELECT DISTINCT A.ProductID
+FROM Production.ProductProductPhoto AS A 
+    INNER JOIN Production.ProductReview AS B
+    ON A.ProductID = B.ProductID;
