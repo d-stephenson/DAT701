@@ -223,3 +223,6 @@ FROM Person.Person AS MyPeople
 WHERE EXISTS (SELECT JobTitle
         FROM HumanResources.Employee
         WHERE BusinessEntityID = MyPeople.BusinessEntityID);
+
+-- PIVOT the Result Set
+
