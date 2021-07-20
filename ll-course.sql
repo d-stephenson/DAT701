@@ -83,3 +83,12 @@ SELECT TOP 10 WorkOrderID
     , NEWID () AS NewID
 FROM Production.WorkOrder
 ORDER BY NewID;
+
+-- IIF Logical Function
+
+SELECT BusinessEntityID
+    , SalesYTD
+    , IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal') AS Status
+    , COUNT(*)
+FROM Sales.SalesPerson
+GROUP BY IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal');
