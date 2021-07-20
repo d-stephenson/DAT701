@@ -89,6 +89,39 @@ ORDER BY NewID;
 SELECT BusinessEntityID
     , SalesYTD
     , IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal') AS Status
+FROM Sales.SalesPerson
+
+SELECT IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal') AS Status
     , COUNT(*)
 FROM Sales.SalesPerson
 GROUP BY IIF (SalesYTD > 2000000, 'Met sales goal', 'Has not met goal');
+
+-- Square Brackets
+
+SELECT FirstName AS [Person First Name]
+    , LastName AS [Person Last Name]
+FROM Person.Person;
+
+-- Group By & Count
+
+SELECT City, StateProvinceID, COUNT(*) AS CountOfAddress
+FROM Person.Address
+GROUP BY City, StateProvinceID
+ORDER BY City DESC;
+
+-- Aggregate Functions
+
+SELECT SalesOrderID
+    , SUM(LineTotal) AS OrderTotal
+    , SUM(OrderQty) AS NumberOfItems
+    , COUNT(DISTINCT ProductID) AS UniqueItems
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+ORDER BY OrderTotal DESC;
+
+SELECT SalesOrderDetail.ProductID
+    , Product.NAMES, SUM(SalesOrderDetail.OrderQty) AS TotalQtySold
+FROM Sales.SalesOrderDetail INNER JOIN Production.ProductID
+    ON Sales.SalesOrderDetail.ProductID = Production.Product.ProductID
+GROUP BY SalesOrderDetail.ProductID, Product.Name
+ORDER BY TotalQtySold DESC;
