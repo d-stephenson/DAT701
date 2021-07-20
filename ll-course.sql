@@ -242,3 +242,12 @@ FROM (SELECT ProductLine, ListPrice
       FROM Production.Product) AS SourceData
 PIVOT (AVG(ListPrice) FOR ProductLine IN (M, R, S, T)) AS PivotTable;
 
+-- Variable in a Query
+
+DECLARE @MyFirstVariable INT;
+
+SET @MyFirstVariable = 5;
+
+SELECT @MyFirstVariable AS MyValue
+    , @MyFirstVariable * 5 AS Multipliction
+    , @MyFirstVariable + 10 AS Addition;
