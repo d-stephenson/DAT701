@@ -161,3 +161,18 @@ ORDER BY SalesYTD DESC;
 
 -- Subquery in a Where Clause
 
+SELECT SalesOrderID, SUM(LineTotal) AS OrderTotal
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+HAVING SUM(LineTotal) > 20000;
+
+SELECT SalesOrderID, SUM(LineTotal) AS OrderTotal
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID
+HAVING SUM(LineTotal) > 
+    (SELECT AVG(ResultTable.MyValues) AS AverageValue
+     FROM (SELECT SUM(LineTotal) AS MyValues
+            FROM Sales.SalesOrderDetail
+            GROUP BY SalesOrderID) AS ResultTable
+    )
+;
