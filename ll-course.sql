@@ -246,8 +246,17 @@ PIVOT (AVG(ListPrice) FOR ProductLine IN (M, R, S, T)) AS PivotTable;
 
 DECLARE @MyFirstVariable INT;
 
-SET @MyFirstVariable = 5;
+SET @MyFirstVariable = 5; -- Change variable and re-run e.g. 10
 
 SELECT @MyFirstVariable AS MyValue
     , @MyFirstVariable * 5 AS Multipliction
     , @MyFirstVariable + 10 AS Addition;
+
+DECLARE @VarColor VARCHAR(20) = 'Blue'; -- Change variable and re-run e.g. Red
+
+SELECT ProductID, Name, ProductNumber, Color, ListPrice
+FROM Production.Product
+WHERE Color = @VarColor;
+
+-- Counter for Looping Statement 
+
