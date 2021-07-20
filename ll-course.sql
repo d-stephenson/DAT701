@@ -32,3 +32,22 @@ SELECT BusinessEntityID
     , FLOOR (SalesYTD) AS RoundFloor
 FROM Sales.SalesPerson;
 
+-- Work with Date Functions
+
+SELECT BusinessEntityID
+    , HireDate
+    , YEAR (HireDate) AS HireYear
+    , MONTH (HireDate) AS HireMonth
+    , DAY (HireDate) AS HireDay
+FROM HumanResources.Employee;
+
+SELECT YEAR(HireDate), COUNT(*) AS NewHires
+FROM HumanResources.Employee
+GROUP BY YEAR(HireDate);
+
+SELECT BusinessEntityID
+    , HireDate
+    , DATEDIFF (year, HireDate, GETDATE()) AS YearsSinceHire
+    , DATEADD (year, 10, HireDate) AS AnniversaryDate
+FROM HumanResources.Employee;
+
