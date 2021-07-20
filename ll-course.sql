@@ -226,3 +226,19 @@ WHERE EXISTS (SELECT JobTitle
 
 -- PIVOT the Result Set
 
+SELECT ProductLine, AVG(ListPrice) AS AveragePrice
+FROM Production.Product
+WHERE ProductLine IS NOT NULL
+GROUP BY ProductLine;
+
+SELECT M, R, S, T
+FROM (SELECT ProductLine, ListPrice
+      FROM Production.Product) AS SourceData
+PIVOT (AVG(ListPrice) FOR ProductLine IN (M, R, S, T)) AS PivotTable;
+
+SELECT 'Average List Price' AS 'Product Line'
+    , M, R, S, T
+FROM (SELECT ProductLine, ListPrice
+      FROM Production.Product) AS SourceData
+PIVOT (AVG(ListPrice) FOR ProductLine IN (M, R, S, T)) AS PivotTable;
+
