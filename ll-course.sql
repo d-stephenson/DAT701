@@ -134,3 +134,30 @@ FROM Production.Product
 WHERE Color IS NOT NULL
 GROUP BY Color 
 HAVING COUNT(*) > 25;
+
+-- Subquery
+
+SELECT BusinessEntityID
+    , SalesYTD
+    , 5
+FROM Sales.SalesPerson
+ORDER BY SalesYTD DESC;
+
+SELECT TOP 1 SalesYTD
+FROM Sales.SalesPerson
+ORDER BY SalesYTD DESC;
+
+SELECT MAX(SalesYTD)
+FROM Sales.SalesPerson;
+
+SELECT BusinessEntityID
+    , SalesYTD
+    , (SELECT MAX(SalesYTD)
+        FROM Sales.SalesPerson) AS HighestSales
+    , (SELECT MAX(SalesYTD)
+        FROM Sales.SalesPerson) - SalesYTD AS SalesGap
+FROM Sales.SalesPerson
+ORDER BY SalesYTD DESC;
+
+-- Subquery in a Where Clause
+
