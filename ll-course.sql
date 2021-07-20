@@ -126,3 +126,11 @@ FROM Sales.SalesOrderDetail INNER JOIN Production.ProductID
     ON Sales.SalesOrderDetail.ProductID = Production.Product.ProductID
 GROUP BY SalesOrderDetail.ProductID, Product.Name
 ORDER BY TotalQtySold DESC;
+
+-- Filter Groups with Having
+
+SELECT Color, COUNT(*) AS NumberOfProducts
+FROM Production.Product
+WHERE Color IS NOT NULL
+GROUP BY Color 
+HAVING COUNT(*) > 25;
