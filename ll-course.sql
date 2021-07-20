@@ -176,3 +176,50 @@ HAVING SUM(LineTotal) >
             GROUP BY SalesOrderID) AS ResultTable
     )
 ;
+
+-- Correlated Subqueries
+    -- Which Subquery performs better?
+
+SELECT BusinessEntityID, FirstName, LastName
+FROM Person.Person;
+
+SELECT BusinessEntityID, JobTitle
+FROM HumanResources.Employee;
+
+SELECT Person.BusinessEntityID
+    , Person.FirstName
+    , Person.LastName
+    , Employee.JobTitle
+FROM Person.Person INNER JOIN HumanResources.Employee 
+    ON Person.BusinessEntityID = Employee.BusinessEntityID;
+
+SELECT BusinessEntityID
+    , FirstName
+    , LastName
+    , (SELECT JobTitle
+        FROM HumanResources.Employee
+        WHERE BusinessEntityID = MyPeople.BusinessEntityID) AS JobTitle
+FROM Person.Person AS MyPeople
+WHERE JobTitle IS NOT NULL;
+
+SELECT BusinessEntityID
+    , FirstName
+    , LastName
+    , (SELECT JobTitle
+        FROM HumanResources.Employee
+        WHERE BusinessEntityID = MyPeople.BusinessEntityID) AS JobTitle
+FROM Person.Person AS MyPeople
+WHERE (SELECT JobTitle
+        FROM HumanResources.Employee
+        WHERE BusinessEntityID = MyPeople.BusinessEntityID) IS NOT NULL;
+
+SELECT BusinessEntityID
+    , FirstName
+    , LastName
+    , (SELECT JobTitle
+        FROM HumanResources.Employee
+        WHERE BusinessEntityID = MyPeople.BusinessEntityID) AS JobTitle
+FROM Person.Person AS MyPeople
+WHERE EXISTS (SELECT JobTitle
+        FROM HumanResources.Employee
+        WHERE BusinessEntityID = MyPeople.BusinessEntityID);
