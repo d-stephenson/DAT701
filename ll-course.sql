@@ -51,3 +51,20 @@ SELECT BusinessEntityID
     , DATEADD (year, 10, HireDate) AS AnniversaryDate
 FROM HumanResources.Employee;
 
+-- Format Dates & Times
+
+SELECT BusinessEntityID
+    , HireDate
+    , FORMAT (HireDate, 'dddd') AS FormattedDate
+FROM HumanResources.Employee;
+
+SELECT BusinessEntityID
+    , HireDate
+    , FORMAT (HireDate, 'dddd, MMM dd, yyyy') AS FormattedDate
+FROM HumanResources.Employee;
+
+SELECT BusinessEntityID
+    , HireDate
+    , FORMAT (HireDate, 'd-MMM') AS FormattedDate
+FROM HumanResources.Employee;
+
