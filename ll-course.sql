@@ -122,7 +122,7 @@ ORDER BY OrderTotal DESC;
 SELECT SalesOrderDetail.ProductID
     , Product.NAMES
     , SUM(SalesOrderDetail.OrderQty) AS TotalQtySold
-FROM Sales.SalesOrderDetail INNER JOIN Production.ProductID
+FROM Sales.SalesOrderDetail INNER JOIN Production.Product
     ON Sales.SalesOrderDetail.ProductID = Production.Product.ProductID
 GROUP BY SalesOrderDetail.ProductID, Product.Name
 ORDER BY TotalQtySold DESC;
