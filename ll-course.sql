@@ -213,6 +213,35 @@ WHERE (SELECT JobTitle
         FROM HumanResources.Employee
         WHERE BusinessEntityID = MyPeople.BusinessEntityID) IS NOT NULL;
 
+-- CTE common-table-expression
+
+WITH Person_CTE (BusinessEntityID, FirstName, LastName)  
+AS  
+-- Define the first CTE query.  
+(  
+    SELECT BusinessEntityID, FirstName, LastName  
+    FROM Person.Person  
+)  
+,   -- Use a comma to separate multiple CTE definitions.  
+  
+-- Define the second CTE query, which returns sales quota data by year for each sales person.  
+Employee_CTE (JobTitle, BusinessEntityID)  
+AS  
+(  
+SELECT JobTitle, BusinessEntityID
+    FROM HumanResources.Employee  
+)  
+  
+-- Define the outer query by referencing columns from both CTEs.  
+SELECT Person_CTE.BusinessEntityID
+    , FirstName
+    , LastName
+    , JobTitle
+FROM Person_CTE 
+JOIN Employee_CTE ON Person_CTE.BusinessEntityID = Employee_CTE.BusinessEntityID
+
+-- End CTE
+
 SELECT BusinessEntityID
     , FirstName
     , LastName
