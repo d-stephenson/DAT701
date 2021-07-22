@@ -193,7 +193,7 @@ SELECT Person.BusinessEntityID
 FROM Person.Person INNER JOIN HumanResources.Employee 
     ON Person.BusinessEntityID = Employee.BusinessEntityID;
 
-SELECT BusinessEntityID
+SELECT BusinessEntityID -- Alias not treated as name of the column so query fails [AS JobTitle]
     , FirstName
     , LastName
     , (SELECT JobTitle
@@ -289,8 +289,8 @@ FROM Production.ProductCategory
 
 UNION
 
-SELECT ProductSubcayegoryID
-    , ProductSubcayegoryID
+SELECT ProductSubcategoryID
+    , ProductSubcategoryID
     , Name 
 FROM Production.ProductSubcategory;
 
