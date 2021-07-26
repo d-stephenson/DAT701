@@ -9,6 +9,7 @@ SELECT
 FROM DimEmployee
 WHERE DepartmentName = 'Marketing';
 
+-- PART ONE
 -- Q. 1A
 
 SELECT 
