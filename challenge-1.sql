@@ -123,19 +123,38 @@ ORDER BY OrderDate;
 
 SELECT 
     TOP 5 SalesAmountQuota,
-    q.CalendarYear,
+    sq.CalendarYear,
     e.FirstName,
     e.LastName,
     e.DepartmentName,
-    q.SalesAmountQuota
-FROM FactSalesQuota q
-    JOIN DimEmployee e
-WHERE q.CalendarYear = 2010;
+    sq.SalesAmountQuota
+FROM FactSalesQuota sq
+    JOIN DimEmployee e ON sq.EmployeeKey = e.EmployeeKey
+WHERE sq.CalendarYear = 2010;
 
+-- PART THREE
+-- Test example ///////////
 
+SELECT
+    e.DepartmentName,
+    sq.CalendarYear,
+    COUNT(e.EmployeeKey) AS TotalStaff,
+    SUM(sq.SalesAmountQuota) AS TotalQuota
+FROM DimEmployee e
+    JOIN FactSalesQuota sq ON sq.EmployeeKey = e.EmployeeKey
+GROUP BY
+    e.DepartmentName,
+    sq.CalendarYear;
 
+-- Q. 3A
 
-
-
+SELECT 
+    DISTINCT(p.EnglishProductName),
+    p.EnglishDescription,
+    COUNT(s.FactInternetSales) AS 'TotalOrders'
+FROM FactInternetSales s 
+    JOIN DimProduct p ON s.ProductKey = p.ProductKey
+WHERE YEAR(s.OrderDate) = 2010
+ORDER BY 'TotalOrders' DESC;
 
 
