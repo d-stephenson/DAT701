@@ -119,6 +119,21 @@ FROM DimProduct p
 WHERE f.OrderDate = 2010
 ORDER BY OrderDate;
 
+-- Q. 2C
+
+SELECT 
+    TOP 5 SalesAmountQuota,
+    q.CalendarYear,
+    e.FirstName,
+    e.LastName,
+    e.DepartmentName,
+    q.SalesAmountQuota
+FROM FactSalesQuota q
+    JOIN DimEmployee e
+WHERE q.CalendarYear = 2010;
+
+
+
 
 
 
