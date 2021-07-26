@@ -1,3 +1,13 @@
+USE AdventureWorksDW2017;
+
+ALTER AUTHORIZATION ON DATABASE:: [AdventureWorksDW2017] TO [sa]
+go 
+
+SELECT TOP 1 * FROM FactInternetSales
+SELECT TOP 1 *  FROM DimProduct
+SELECT TOP 1 *  FROM DimSalesTerritory
+SELECT TOP 1 *  FROM DimCustomer
+
 -- SQL Challenge 1
 
 -- PART ONE
@@ -17,9 +27,9 @@ SELECT
     lastname,
     DepartmentName,
     StartDate,
-    `Status`
+    Status
 FROM DimEmployee
-WHERE DepartmentName = 'Marketing' AND `Status` = 'Current';
+WHERE DepartmentName = 'Marketing' AND Status = 'Current';
 
 -- Q. 1B
 
@@ -27,10 +37,10 @@ SELECT
     ProductKey,
     EnglishProductName,
     Color,
-    `Weight`
+    Weight
 FROM DimProduct
-WHERE `Weight` > 50
-    ORBER BY `Weight`;
+WHERE Weight > 50
+    ORDER BY Weight;
 
 -- Q. 1C
 
@@ -70,18 +80,6 @@ WHERE EnglishProductCategoryName = 'Bikes'
     ORDER BY EnglishProductSubCategoryName;
 
 -- ii
-SELECT 
-    p.ProductKey,
-    p.EnglishDescription,
-    s.EnglishProductSubcategoryName,
-    c.EnglishProductCategoryName
-FROM DimProduct p 
-    JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
-    JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
-WHERE EnglishProductCategoryName = 'Bikes'
-    ORDER BY EnglishProductSubCategoryName;
-
--- iii
 SELECT DISTINCT 
     p.EnglishDescription,
     s.EnglishProductSubcategoryName,
@@ -89,51 +87,55 @@ SELECT DISTINCT
 FROM DimProduct p 
     JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
     JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
-WHERE EnglishProductCategoryName = 'Bikes'
-    ORDER BY EnglishProductSubCategoryName;
+WHERE EnglishProductCategoryName = 'Bikes';
 
--- iv
-SELECT COUNT (DISTINCT s.EnglishProductSubcategoryName) AS 'Count'
+-- iii ///// NOT WORKING
+SELECT DISTINCT
     p.EnglishDescription,
     s.EnglishProductSubcategoryName,
-    c.EnglishProductCategoryName
+    c.EnglishProductCategoryName,
+	COUNT(p.EnglishDescription) AS 'Count'   
 FROM DimProduct p 
     JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
     JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
 WHERE EnglishProductCategoryName = 'Bikes'
-    ORDER BY EnglishProductSubCategoryName;
+GROUP BY p.EnglishDescription; 
+
+SELECT 
+	(COUNT(DISTINCT p.EnglishDescription)) AS 'Count'   
+FROM DimProduct p 
+    JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
+    JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
+WHERE EnglishProductCategoryName = 'Bikes'
+GROUP BY p.EnglishDescription; 
 
 -- Q. 2B
 
-SELECT 
-    TOP 10 OrderDate,
+SELECT TOP 10
     CONCAT(c.FirstName, c.LastName) AS 'Customer Name',
     p.EnglishDescription,
     t.SalesTerritoryCountry,
-    CONVERT(f.OrderDate, 'dddd, MMM, yyyy'),
-    YEAR(f.YearOrdered)
+    FORMAT(f.OrderDate, 'dd/MM/yyyy') AS 'OrderDate',
+    FORMAT(f.OrderDate, 'yyyy') AS 'YearOrdered'
 FROM DimProduct p 
     JOIN FactInternetSales f ON p.ProductKey = f.ProductKey
     JOIN DimSalesTerritory t ON f.SalesTerritoryKey = t.SalesTerritoryKey
-    JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey
-WHERE f.OrderDate = 2010
-ORDER BY OrderDate;
+    JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey;
 
--- Q. 2C
+-- Q. 2C ///// NOT WORKING
 
-SELECT 
-    TOP 5 SalesAmountQuota,
+SELECT TOP 5 
     sq.CalendarYear,
     e.FirstName,
     e.LastName,
     e.DepartmentName,
-    sq.SalesAmountQuota
+    SELECT SUM(sq.SalesAmountQuota) AS 'SalesAmountQuota'
 FROM FactSalesQuota sq
     JOIN DimEmployee e ON sq.EmployeeKey = e.EmployeeKey
 WHERE sq.CalendarYear = 2010;
 
 -- PART THREE
--- Test example ///////////
+-- Test example 
 
 SELECT
     e.DepartmentName,
@@ -149,12 +151,17 @@ GROUP BY
 -- Q. 3A
 
 SELECT 
-    DISTINCT(p.EnglishProductName),
+	p.EnglishProductName,
     p.EnglishDescription,
-    COUNT(s.FactInternetSales) AS 'TotalOrders'
+    COUNT(s.OrderQuantity) AS 'TotalOrders'
 FROM FactInternetSales s 
     JOIN DimProduct p ON s.ProductKey = p.ProductKey
 WHERE YEAR(s.OrderDate) = 2010
-ORDER BY 'TotalOrders' DESC;
+GROUP BY 	
+	p.EnglishProductName,
+    p.EnglishDescription
+ORDER BY
+	'TotalOrders' DESC;
 
+-- Q. 3B
 
