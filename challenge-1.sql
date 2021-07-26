@@ -165,3 +165,25 @@ ORDER BY
 
 -- Q. 3B
 
+-- i
+SELECT 
+	sr.SalesReasonName,
+	COUNT(fis.OrderQuantity) AS 'TotalOrders'
+FROM DimSalesReason sr
+	JOIN FactInternetSalesReason fisr ON sr.SalesReasonKey = fisr.SalesReasonKey
+	JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+WHERE YEAR(fis.OrderDate) = 2010
+GROUP BY
+	sr.SalesReasonName;
+
+-- ii
+SELECT 
+	sr.SalesReasonName,
+	COUNT(fis.OrderQuantity) AS 'TotalOrders'
+FROM DimSalesReason sr
+	JOIN FactInternetSalesReason fisr ON sr.SalesReasonKey = fisr.SalesReasonKey
+	JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+GROUP BY
+	sr.SalesReasonName;
+
+-- Q. 3C
