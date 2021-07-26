@@ -105,5 +105,22 @@ WHERE EnglishProductCategoryName = 'Bikes'
 
 -- Q. 2B
 
+SELECT 
+    TOP 10 OrderDate,
+    CONCAT(c.FirstName, c.LastName) AS 'Customer Name',
+    p.EnglishDescription,
+    t.SalesTerritoryCountry,
+    CONVERT(f.OrderDate, 'dddd, MMM, yyyy'),
+    YEAR(f.YearOrdered)
+FROM DimProduct p 
+    JOIN FactInternetSales f ON p.ProductKey = f.ProductKey
+    JOIN DimSalesTerritory t ON f.SalesTerritoryKey = t.SalesTerritoryKey
+    JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey
+WHERE f.OrderDate = 2010
+ORDER BY OrderDate;
+
+
+
+
 
 
