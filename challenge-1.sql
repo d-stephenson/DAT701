@@ -89,25 +89,19 @@ FROM DimProduct p
     JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
 WHERE EnglishProductCategoryName = 'Bikes';
 
--- iii ///// NOT WORKING
+-- iii 
 SELECT DISTINCT
     p.EnglishDescription,
     s.EnglishProductSubcategoryName,
     c.EnglishProductCategoryName,
-	COUNT(p.EnglishDescription) AS 'Count'   
+	COUNT(*) AS 'Count'   
 FROM DimProduct p 
     JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
     JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
 WHERE EnglishProductCategoryName = 'Bikes'
-GROUP BY p.EnglishDescription; 
-
-SELECT 
-	(COUNT(DISTINCT p.EnglishDescription)) AS 'Count'   
-FROM DimProduct p 
-    JOIN DimProductSubCategory s ON p.ProductSubcategoryKey = s.ProductSubcategoryKey
-    JOIN DimProductCategory c ON s.ProductCategoryKey = c.ProductCategoryKey
-WHERE EnglishProductCategoryName = 'Bikes'
-GROUP BY p.EnglishDescription; 
+GROUP BY p.EnglishDescription,
+		 s.EnglishProductSubcategoryName,
+		 c.EnglishProductCategoryName; 
 
 -- Q. 2B
 
@@ -122,17 +116,22 @@ FROM DimProduct p
     JOIN DimSalesTerritory t ON f.SalesTerritoryKey = t.SalesTerritoryKey
     JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey;
 
--- Q. 2C ///// NOT WORKING
+-- Q. 2C 
 
 SELECT TOP 5 
     sq.CalendarYear,
     e.FirstName,
     e.LastName,
     e.DepartmentName,
-    SELECT SUM(sq.SalesAmountQuota) AS 'SalesAmountQuota'
+    SUM(sq.SalesAmountQuota) AS 'SalesAmountQuota'
 FROM FactSalesQuota sq
     JOIN DimEmployee e ON sq.EmployeeKey = e.EmployeeKey
-WHERE sq.CalendarYear = 2010;
+WHERE sq.CalendarYear = 2010
+GROUP BY sq.CalendarYear,
+    e.FirstName,
+    e.LastName,
+    e.DepartmentName
+ORDER BY 'SalesAmountQuota' DESC;
 
 -- PART THREE
 -- Test example 
@@ -187,3 +186,18 @@ GROUP BY
 	sr.SalesReasonName;
 
 -- Q. 3C
+
+SELECT DISTINCT 
+	YEAR( fis.OrderDate) AS 'CalendarYear',
+	p.EnglishPromotionName,
+	COUNT(DISTINCT fis.ProductKey) AS 'TotalOrders',
+	SUM(DISTINCT fis.SalesAmount) AS 'TotalSalesAmount'
+FROM FactInternetSales fis 
+	JOIN DimPromotion p ON fis.PromotionKey = p.PromotionKey
+GROUP BY
+	fis.OrderDate,
+	p.EnglishPromotionName,
+	fis.ProductKey,
+	fis.SalesAmount
+
+
