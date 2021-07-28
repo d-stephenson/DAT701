@@ -17,16 +17,48 @@ GO
 -- 1. Explore the FactInternetSales table. For what years are there sales?
 -- a. Do this by selecting from the FactInternetSales table and ordering by a date column
 
+SELECT * FROM FactInternetSales;
 
+SELECT DISTINCT
+	YEAR(OrderDate)
+FROM FactInternetSales
+ORDER BY YEAR(OrderDate);
 
 -- b. Write a query that joins the FactInternetSales table to the DimDate table and use the min() and max() 
 -- functions to get the range of calendar years
 
+SELECT * FROM DimDate;
 
+IF EXISTS (SELECT dd.CalendarYear
+		   FROM DimDate dd)
+SELECT 
+	MAX(YEAR(OrderDate)) AS 'MaxYear',
+	MIN(YEAR(OrderDate)) AS 'MinYear'
+FROM DimDate dd
+	INNER JOIN FactInternetSales fis ON dd.DateKey = fis.ShipDateKey;
 
 -- c. Change (B) above and use the distinct clause to get a list of the CalendarYears for which there are sales
 
-
+SELECT DISTINCT
+	MAX(YEAR(OrderDate)) AS 'MaxYear',
+	MIN(YEAR(OrderDate)) AS 'MinYear'
+FROM DimDate dd
+	INNER JOIN FactInternetSales fis ON dd.DateKey = fis.ShipDateKey;
 
 -- 2. Explore FactInternetSalesReason and DimSalesReason. What is the most common sales reason for each year? 
 -- Write a query that presents the sales reasons in a way that the most common sales reasons can be determined.
+
+SELECT * FROM FactInternetSalesReason;
+SELECT * FROM DimSalesReason;
+
+SELECT 
+	YEAR(OrderDate) AS 'Year',
+	SalesReasonName,
+	COUNT(SalesReasonName) AS 'Count'
+FROM DimSalesReason dsr
+	JOIN FactInternetSalesReason fisr ON dsr.SalesReasonKey = fisr.SalesReasonKey
+	JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+GROUP BY 
+	YEAR(OrderDate),
+	SalesReasonName
+ORDER BY COUNT(SalesReasonName) DESC;
