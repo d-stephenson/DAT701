@@ -125,7 +125,7 @@ SELECT MaxYearCount_CTE.Sales_Year, SalesReasonName, MaxCount
 FROM MaxCount_CTE
 JOIN MaxYearCount_CTE ON MaxCount_CTE.SRN_Count = MaxYearCount_CTE.MaxCount
 ORDER BY
-    MaxYearCount_CTE.Sales_Year,
+    MaxYearCount_CTE.Sales_Year DESC,
     MaxCount;
 
 
