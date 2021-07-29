@@ -93,10 +93,10 @@ WITH MaxCount_CTE(Sales_Year, SalesReasonName, SRN_Count) AS
         SalesReasonName
     )
 
-SELECT DISTINCT Sales_Year, SalesReasonName, MAX(SRN_Count) AS MaxCount
+SELECT Sales_year, MAX(SRN_Count) AS MaxCount
 FROM MaxCount_CTE
 GROUP BY
-    SalesReasonName,
     Sales_Year;
+
 
 
