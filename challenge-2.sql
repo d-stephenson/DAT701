@@ -98,5 +98,36 @@ FROM MaxCount_CTE
 GROUP BY
     Sales_Year;
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+WITH MaxCount_CTE(Sales_Year, SalesReasonName, SRN_Count) AS
+    (
+    SELECT
+        YEAR(OrderDate) AS Sales_Year,
+        SalesReasonName,
+        COUNT(SalesReasonName) AS SRN_Count
+    FROM DimSalesReason dsr
+        JOIN FactInternetSalesReason fisr ON dsr.SalesReasonKey = fisr.SalesReasonKey
+        JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+    GROUP BY
+        YEAR(OrderDate),
+        SalesReasonName
+    )
+    ,
+    MaxYearCount_CTE(Sales_Year, MaxCount) AS
+    (
+    SELECT Sales_Year, MAX(SRN_Count) AS MaxCount
+    FROM MaxCount_CTE
+    GROUP BY
+        Sales_Year
+    )
+SELECT MaxYearCount_CTE.Sales_Year, SalesReasonName, MaxCount
+FROM MaxCount_CTE
+JOIN MaxYearCount_CTE ON MaxCount_CTE.SRN_Count = MaxYearCount_CTE.MaxCount
+ORDER BY
+    MaxYearCount_CTE.Sales_Year,
+    MaxCount;
+
+
 
 
