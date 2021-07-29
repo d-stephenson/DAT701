@@ -62,3 +62,16 @@ GROUP BY
 	YEAR(OrderDate),
 	SalesReasonName
 ORDER BY COUNT(SalesReasonName) DESC;
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+SELECT MAX(count) FROM (SELECT
+    YEAR(OrderDate) AS 'Year',
+    SalesReasonName,
+    COUNT(SalesReasonName) AS 'Count'
+FROM DimSalesReason dsr
+    JOIN FactInternetSalesReason fisr ON dsr.SalesReasonKey = fisr.SalesReasonKey
+    JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+GROUP BY
+    YEAR(OrderDate),
+    SalesReasonName) AS MaxCount;
