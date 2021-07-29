@@ -118,11 +118,24 @@ GROUP BY p.EnglishDescription,
 --  • The OrderDate field must be showing the date format dd/mm/yyyy using the Convert function.
 --  • The YearOrdered field was derived from the OrderDate field using the Year function. Sort the results by the orderdate and return the top 10.
 
+-- i
 SELECT TOP 10
     CONCAT(c.FirstName, c.LastName) AS 'Customer Name',
     p.EnglishDescription,
     t.SalesTerritoryCountry,
     FORMAT(f.OrderDate, 'dd/MM/yyyy') AS 'OrderDate',
+    FORMAT(f.OrderDate, 'yyyy') AS 'YearOrdered'
+FROM DimProduct p 
+    JOIN FactInternetSales f ON p.ProductKey = f.ProductKey
+    JOIN DimSalesTerritory t ON f.SalesTerritoryKey = t.SalesTerritoryKey
+    JOIN DimCustomer c ON f.CustomerKey = c.CustomerKey;
+
+-- ii
+SELECT TOP 10
+    CONCAT(c.FirstName, c.LastName) AS 'Customer Name',
+    p.EnglishDescription,
+    t.SalesTerritoryCountry,
+    CONVERT(varchar, f.OrderDate, 103) AS 'OrderDate',
     FORMAT(f.OrderDate, 'yyyy') AS 'YearOrdered'
 FROM DimProduct p 
     JOIN FactInternetSales f ON p.ProductKey = f.ProductKey
