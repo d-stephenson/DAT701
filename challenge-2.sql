@@ -65,13 +65,15 @@ ORDER BY COUNT(SalesReasonName) DESC;
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-SELECT MAX(count) FROM (SELECT
-    YEAR(OrderDate) AS 'Year',
-    SalesReasonName,
-    COUNT(SalesReasonName) AS 'Count'
-FROM DimSalesReason dsr
-    JOIN FactInternetSalesReason fisr ON dsr.SalesReasonKey = fisr.SalesReasonKey
-    JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
-GROUP BY
-    YEAR(OrderDate),
-    SalesReasonName) AS MaxCount;
+SELECT MAX(SRN_Count) AS MaxCount
+FROM (SELECT
+           YEAR(OrderDate) AS Sales_Year,
+           SalesReasonName,
+           COUNT(SalesReasonName) AS SRN_Count
+        FROM DimSalesReason dsr
+           JOIN FactInternetSalesReason fisr ON dsr.SalesReasonKey = fisr.SalesReasonKey
+           JOIN FactInternetSales fis ON fisr.SalesOrderNumber = fis.SalesOrderNumber
+        GROUP BY
+           YEAR(OrderDate),
+           SalesReasonName) AS MaxCount;
+
