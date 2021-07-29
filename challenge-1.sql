@@ -136,7 +136,7 @@ SELECT TOP 10
     p.EnglishDescription,
     t.SalesTerritoryCountry,
     CONVERT(varchar, f.OrderDate, 103) AS 'OrderDate',
-    FORMAT(f.OrderDate, 'yyyy') AS 'YearOrdered'
+    YEAR(CONVERT(varchar, f.OrderDate, 0)) AS 'YearOrdered'
 FROM DimProduct p 
     JOIN FactInternetSales f ON p.ProductKey = f.ProductKey
     JOIN DimSalesTerritory t ON f.SalesTerritoryKey = t.SalesTerritoryKey
