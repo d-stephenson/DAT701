@@ -10,6 +10,10 @@ GO
 -- Which 10 customers made the most orders during 2010? Return their name and
 -- the total number of orders they made during 2010.
 
+select  
+    FirstName,
+    LastName,
+    TotalOrders
 
 
 
@@ -20,9 +24,14 @@ GO
 
 
 
+
+
+
 -- Q. 1C
 -- During 2011, there were two products where men are more than 4x as likely to 
 -- purchase these than women. Try to complete the following query:
+
+
 
 
 
