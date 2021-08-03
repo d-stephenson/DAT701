@@ -10,22 +10,6 @@ GO
 -- Which 10 customers made the most orders during 2010? Return their name and
 -- the total number of orders they made during 2010.
 
-select  
-    FirstName,
-    LastName,
-    TotalOrders
-USE AdventureWorksDW2017;
-GO
-
-ALTER AUTHORIZATION ON DATABASE:: [AdventureWorksDW2017] TO [sa]
-GO
-
--- SQL Challenge 3
-
--- Q. 1A
--- Which 10 customers made the most orders during 2010? Return their name and
--- the total number of orders they made during 2010.
-
 select top 10
     FirstName,
     LastName,
@@ -96,35 +80,103 @@ order by
 -- During 2011, there were two products where men are more than 4x as likely to
 -- purchase these than women. Try to complete the following query:
 
-
-
-
-
-
--- Q. 1D
--- Try to rewrite this query without the CTE and without the LOG ratio.
-
-
-
-
-
--- Q. 1B
--- Google the union all statement and re-write this query so that you have the 
--- top 3 selling products for Men and the top 3 selling products for Woman
-
-
-
-
-
-
--- Q. 1C
--- During 2011, there were two products where men are more than 4x as likely to 
--- purchase these than women. Try to complete the following query:
-
-
-
-
+with products_by_gender as
+(
+    select
+        p.EnglishProductName,
+        count(*) as TotalProductSales,
+        sum(case when c.Gender = 'M' then 1 else 0 end) as SalesToMen,
+        sum(case when c.Gender = 'F' then 1 else 0 end) as SalesToWomen
+    from FactInternetSales f
+        inner join DimCustomer c on c.CustomerKey = f.CustomerKey
+        inner join DimProduct p on p.ProductKey = f.ProductKey
+    where c.Gender = 'M'
+    group by
+        p.EnglishProductName
+        --c.Gender
+)
+select *
+from products_by_gender
+where log(SalesToMen + 0.5, 1) / log(SalesToWomen + 0.5, 2) >= 2;
 
 
 -- Q. 1D
 -- Try to rewrite this query without the CTE and without the LOG ratio.
+
+
+
+
+
+
+
+-- Q. 2
+
+select
+    fa.TicketDate,
+    fa.TicketNumber,
+    fa.TicketSummary,
+    a.AlertVategory,
+    a.AlertSubCategory,
+    c.CustCode,
+    c.SalesRegion,
+    fte.HoursActual,
+    fte.TicketStatus
+from FactAlert fa
+    inner join DimDate d on fa.DateId = d.DateId
+    inner join DimAlertType a on fa.AlertTypeID = a.AlertTypeID
+    inner join DimCustomer c on fa.CustomerID = c.CustomerID
+    inner join FactTimeEntry fte on fa.TicketNumber = fte.TicketNumber
+where fte.TicketNumber is not null
+    and fa.TicketDate > '2018-01-01'
+    and fte.TeamID = 11;
+
+-- Q. 3
+
+--Which SalesTerritories are meeting their sales quotas each year?
+
+select top 50 * from FactSalesQuota; --> going to need the
+EmployeeKey, DateKey / CalendarKey / Date columns
+select top 50 * from FactInternetSales; --> Going to need the
+OrderDate, SalesTerritoryKey, SalesAmount
+select top 50 * from DimEmployee; --> going to need the
+EmployeeKey, FirstName, LastName, SalesTerritoryKey
+select top 50 * from DimSalesTerritory; --> going to need the
+SalesTerritoryCountry and SalesTerritoryRegion
+
+select top 50 *
+from FactInternetSales fs
+    inner join DimSalesTerritory st on st.SalesTerritoryKey = fs.SalesTerritoryKey
+    inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
+    inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey;
+
+--Plan of attack:
+--1. Get a list of employees & their sales territories
+--2. Get the sales quotas of each employee, then aggregate this by territory
+--3. Get the actual sales for each territory
+--4. Compare the actual sales to the sales quota
+
+select top 50
+    sum(fs.SalesAmount) as SalesAmount,
+    year(fs.OrderDate) as SalesOrderYear,
+    fs.SalesTerritoryKey,
+    st.SalesTerritoryCountry,
+    st.SalesTerritoryRegion,
+    de.FirstName,
+    de.LastName,
+    sq.SalesAmountQuota
+from FactInternetSales fs
+    inner join DimSalesTerritory st on st.SalesTerritoryKey = fs.SalesTerritoryKey
+    inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
+    inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey
+group by
+    de.FirstName,
+    de.LastName,
+    SalesAmount,
+    year(fs.OrderDate),
+    fs.SalesTerritoryKey,
+    st.SalesTerritoryCountry,
+    st.SalesTerritoryRegion,
+    sq.SalesAmountQuota;
+    
+
+
