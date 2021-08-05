@@ -142,9 +142,7 @@ where fte.TicketNumber is not null
     and fa.TicketDate > '2018-01-01'
     and fte.TeamID = 11;
 
-
 -- Q. 3
-
 -- A: Replace 'outer apply' with an 'outer join' [below example]
 
 CREATE DATABASE Library
@@ -187,14 +185,14 @@ VALUES
 (5, 'Book5',650, 5),
 (6, 'Book6',400, 3);
 
--- inner join results
+-- Inner join results
 
 SELECT A.author_name, B.id, B.book_name, B.price
 FROM Author A
     INNER JOIN Book B
     ON A.id = B.author_id
 
--- cross apply produces the same results as inner join
+-- Cross apply produces the same results as inner join
 
 CREATE FUNCTION fnGetBooksByAuthorId(@AuthorId int
 RETURNS TABLE
@@ -219,7 +217,6 @@ FROM Author A
     OUTER APPLY fnGetBooksByAuthorId(A.Id) B
 
 -- Q. 4
-
 -- Which SalesTerritories are meeting their sales quotas each year?
 
 select top 50 * from FactSalesQuota; --> going to need the
@@ -251,11 +248,11 @@ from FactInternetSales fs
     inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
     inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey;
 
---Plan of attack:
---1. Get a list of employees & their sales territories
---2. Get the sales quotas of each employee, then aggregate this by territory
---3. Get the actual sales for each territory
---4. Compare the actual sales to the sales quota
+-- Plan of attack:
+-- 1. Get a list of employees & their sales territories
+-- 2. Get the sales quotas of each employee, then aggregate this by territory
+-- 3. Get the actual sales for each territory
+-- 4. Compare the actual sales to the sales quota
 
 select
     SalesOrderYear,    
