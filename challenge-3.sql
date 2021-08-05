@@ -101,16 +101,25 @@ where log(SalesToMen + 0.5, 1) / log(SalesToWomen + 0.5, 2) >= 2;
 -- Try to rewrite this query without the CTE and without the LOG ratio.
 
 select
-    p.EnglishProductName,
-    count(*) as TotalProductSales,
-    sum(case when c.Gender = 'M' then 1 else 0 end) as SalesToMen,
-    sum(case when c.Gender = 'F' then 1 else 0 end) as SalesToWomen
-from FactInternetSales f
-    inner join DimCustomer c on c.CustomerKey = f.CustomerKey
-    inner join DimProduct p on p.ProductKey = f.ProductKey
-where year(f.OrderDate) = 2011  
-group by
-    p.EnglishProductName
+    EnglishProductName,
+    TotalProductSales,
+    SalesToMen,
+    SalesToWomen
+from
+    (
+    select
+        p.EnglishProductName,
+        count(*) as TotalProductSales,
+        sum(case when c.Gender = 'M' then 1 else 0 end) as SalesToMen,
+        sum(case when c.Gender = 'F' then 1 else 0 end) as SalesToWomen
+    from FactInternetSales f
+        inner join DimCustomer c on c.CustomerKey = f.CustomerKey
+        inner join DimProduct p on p.ProductKey = f.ProductKey
+    where year(f.OrderDate) = 2011
+    group by
+        p.EnglishProductName
+    ) as NewTable
+where SalesToMen >= (SalesToWomen * 4);
 
 -- Q. 2
 
