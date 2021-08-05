@@ -191,32 +191,32 @@ VALUES
 
 SELECT A.author_name, B.id, B.book_name, B.price
 FROM Author A
-INNER JOIN Book B
-ON A.id = B.author_id
+    INNER JOIN Book B
+    ON A.id = B.author_id
 
 -- cross apply produces the same results as inner join
 
-CREATE FUNCTION fnGetBooksByAuthorId(@AuthorId int)
+CREATE FUNCTION fnGetBooksByAuthorId(@AuthorId int
 RETURNS TABLE
 AS
 RETURN
 (
-SELECT * FROM Book
-WHERE author_id = @AuthorId
-)
+    SELECT * FROM Book
+    WHERE author_id = @AuthorId
+);
 
 SELECT A.author_name, B.id, B.book_name, B.price
 FROM Author A
-CROSS APPLY fnGetBooksByAuthorId(A.Id) B
+    CROSS APPLY fnGetBooksByAuthorId(A.Id) B
 
 SELECT A.author_name, B.id, B.book_name, B.price
 FROM Author A
-LEFT JOIN Book B
-ON A.id = B.author_id
+    LEFT JOIN Book B
+    ON A.id = B.author_id
     
 SELECT A.author_name, B.id, B.book_name, B.price
 FROM Author A
-OUTER APPLY fnGetBooksByAuthorId(A.Id) B
+    OUTER APPLY fnGetBooksByAuthorId(A.Id) B
 
 -- Q. 4
 
@@ -236,16 +236,10 @@ from FactInternetSales fs
     inner join DimSalesTerritory st on st.SalesTerritoryKey = fs.SalesTerritoryKey
     inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
     inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey;
-
--- Plan of attack:
--- 1. Get a list of employees & their sales territories
--- 2. Get the sales quotas of each employee, then aggregate this by territory
--- 3. Get the actual sales for each territory
--- 4. Compare the actual sales to the sales quota
-
+    
 select top 50
-    sum(fs.SalesAmount) as SalesAmount,
     year(fs.OrderDate) as SalesOrderYear,
+    fs.SalesAmount,
     fs.SalesTerritoryKey,
     st.SalesTerritoryCountry,
     st.SalesTerritoryRegion,
@@ -255,13 +249,49 @@ select top 50
 from FactInternetSales fs
     inner join DimSalesTerritory st on st.SalesTerritoryKey = fs.SalesTerritoryKey
     inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
-    inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey
-group by
-    de.FirstName,
-    de.LastName,
+    inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey;
+
+--Plan of attack:
+--1. Get a list of employees & their sales territories
+--2. Get the sales quotas of each employee, then aggregate this by territory
+--3. Get the actual sales for each territory
+--4. Compare the actual sales to the sales quota
+
+select
+    SalesOrderYear,    
+    SalesTerritoryKey,
+    SalesTerritoryCountry,
+    SalesTerritoryRegion,
+    FirstName,
+    LastName,
     SalesAmount,
-    year(fs.OrderDate),
-    fs.SalesTerritoryKey,
-    st.SalesTerritoryCountry,
-    st.SalesTerritoryRegion,
-    sq.SalesAmountQuota;
+    SalesAmountQuota
+from
+    (
+    select
+        sum(fs.SalesAmount) as SalesAmount,
+        year(fs.OrderDate) as SalesOrderYear,
+        fs.SalesTerritoryKey,
+        st.SalesTerritoryCountry,
+        st.SalesTerritoryRegion,
+        de.FirstName,
+        de.LastName,
+        sq.SalesAmountQuota
+    from FactInternetSales fs
+        inner join DimSalesTerritory st on st.SalesTerritoryKey = fs.SalesTerritoryKey
+        inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
+        inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey
+    group by
+        year(fs.OrderDate),
+        de.FirstName,
+        de.LastName,
+        fs.SalesTerritoryKey,
+        st.SalesTerritoryCountry,
+        st.SalesTerritoryRegion,
+        SalesAmount,
+        sq.SalesAmountQuota
+    ) as CompareTable
+where
+    SalesAmount >= SalesAmountQuota
+order by
+    SalesTerritoryKey DESC
