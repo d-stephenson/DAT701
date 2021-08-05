@@ -98,7 +98,6 @@ select *
 from products_by_gender
 where log(SalesToMen + 0.5, 1) / log(SalesToWomen + 0.5, 2) >= 2;
 
-
 -- Q. 1D
 -- Try to rewrite this query without the CTE and without the LOG ratio.
 
@@ -207,7 +206,7 @@ OUTER APPLY fnGetBooksByAuthorId(A.Id) B
 
 -- Q. 4
 
---Which SalesTerritories are meeting their sales quotas each year?
+-- Which SalesTerritories are meeting their sales quotas each year?
 
 select top 50 * from FactSalesQuota; --> going to need the
 EmployeeKey, DateKey / CalendarKey / Date columns
@@ -224,11 +223,11 @@ from FactInternetSales fs
     inner join DimEmployee de on de.SalesTerritoryKey = st.SalesTerritoryKey
     inner join FactSalesQuota sq on sq.EmployeeKey = de.EmployeeKey;
 
---Plan of attack:
---1. Get a list of employees & their sales territories
---2. Get the sales quotas of each employee, then aggregate this by territory
---3. Get the actual sales for each territory
---4. Compare the actual sales to the sales quota
+-- Plan of attack:
+-- 1. Get a list of employees & their sales territories
+-- 2. Get the sales quotas of each employee, then aggregate this by territory
+-- 3. Get the actual sales for each territory
+-- 4. Compare the actual sales to the sales quota
 
 select top 50
     sum(fs.SalesAmount) as SalesAmount,
