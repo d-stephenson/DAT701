@@ -71,7 +71,6 @@ where d.CalendarYear = 2011 AND c.Gender = 'F'
 group by
     c.Gender,
     p.EnglishProductName
-
 order by
     c.Gender DESC,
     TotalProductSales DESC;
@@ -130,7 +129,83 @@ where fte.TicketNumber is not null
     and fa.TicketDate > '2018-01-01'
     and fte.TeamID = 11;
 
+
 -- Q. 3
+
+-- A: Replace 'outer apply' with an 'outer join' [below example]
+
+CREATE DATABASE Library
+GO
+ 
+USE Library;
+ 
+CREATE TABLE Author
+(
+    id INT PRIMARY KEY,
+    author_name VARCHAR(50) NOT NULL,
+);
+ 
+CREATE TABLE Book
+(
+    id INT PRIMARY KEY,
+    book_name VARCHAR(50) NOT NULL,
+    price INT NOT NULL,
+    author_id INT NOT NULL
+);
+ 
+USE Library;
+ 
+INSERT INTO Author
+VALUES
+(1, 'Author1'),
+(2, 'Author2'),
+(3, 'Author3'),
+(4, 'Author4'),
+(5, 'Author5'),
+(6, 'Author6'),
+(7, 'Author7');
+ 
+INSERT INTO Book
+VALUES
+(1, 'Book1',500, 1),
+(2, 'Book2', 300 ,2),
+(3, 'Book3',700, 1),
+(4, 'Book4',400, 3),
+(5, 'Book5',650, 5),
+(6, 'Book6',400, 3);
+
+-- inner join results
+
+SELECT A.author_name, B.id, B.book_name, B.price
+FROM Author A
+INNER JOIN Book B
+ON A.id = B.author_id
+
+-- cross apply produces the same results as inner join
+
+CREATE FUNCTION fnGetBooksByAuthorId(@AuthorId int)
+RETURNS TABLE
+AS
+RETURN
+(
+SELECT * FROM Book
+WHERE author_id = @AuthorId
+)
+
+SELECT A.author_name, B.id, B.book_name, B.price
+FROM Author A
+CROSS APPLY fnGetBooksByAuthorId(A.Id) B
+
+SELECT A.author_name, B.id, B.book_name, B.price
+FROM Author A
+LEFT JOIN Book B
+ON A.id = B.author_id
+    
+SELECT A.author_name, B.id, B.book_name, B.price
+FROM Author A
+OUTER APPLY fnGetBooksByAuthorId(A.Id) B
+
+-- Q. 4
 
 --Which SalesTerritories are meeting their sales quotas each year?
 
@@ -177,6 +252,3 @@ group by
     st.SalesTerritoryCountry,
     st.SalesTerritoryRegion,
     sq.SalesAmountQuota;
-    
-
-
