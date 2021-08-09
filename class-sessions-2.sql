@@ -132,7 +132,7 @@ SELECT Name, Department, Salary,
                RANK() OVER (
                                PARTITION BY Department
                                ORDER BY Salary DESC) AS [Rank]
-FROM Employees
+FROM Employees;
 
 -- dense rank
 
@@ -140,5 +140,24 @@ SELECT Name, Department, Salary,
                DENSE_RANK() OVER (
                                PARTITION BY Department
                                ORDER BY Salary DESC) AS [DenseRank]
-FROM Employees
+FROM Employees;
+
+-- Fetch the 2nd Highest Salary
+WITH EmployeeCTE  AS
+(
+    SELECT Salary, RANK() OVER (ORDER BY Salary DESC) AS Rank_Salary
+    FROM Employees
+)
+
+SELECT TOP 1 Salary FROM EmployeeCTE WHERE Rank_Salary = 2;
+
+-- Fetch the 2nd Hight Salary
+WITH EmployeeCTE  AS
+(
+    SELECT Salary, DENSE_RANK() OVER (ORDER BY Salary DESC) AS DenseRank_Salary
+    FROM Employees
+)
+
+SELECT TOP 1 Salary FROM EmployeeCTE WHERE DenseRank_Salary = 2;
+
 
