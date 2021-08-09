@@ -23,6 +23,8 @@ INSERT INTO Employees Values (10, 'Anurag', 'Payroll', 15000)
 INSERT INTO Employees Values (11, 'Marshal', 'HR', 55000)
 INSERT INTO Employees Values (12, 'David', 'IT', 96000)
 
+-- 
+
 SELECT  Department,
     COUNT(*) AS NoOfEmployees,
     SUM(Salary) AS TotalSalary,
@@ -46,6 +48,8 @@ SELECT
 FROM Employees
 GROUP BY Department
 
+-- return results by including all the aggregations in a subquery and then JOINING that subquery with the main query
+
 SELECT 
     Name, 
     Salary, 
@@ -67,7 +71,9 @@ INNER JOIN
     FROM Employees
     GROUP BY Department) AS Departments
 ON Departments.Department = Employees.Department
-    
+
+-- using the OVER clause combined with the PARTITION BY clause
+
 SELECT 
     Name,
     Salary,
