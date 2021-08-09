@@ -102,3 +102,23 @@ SELECT
                         ORDER BY Salary
                     ) AS RowNumber
 FROM Employees
+
+-- truncate
+
+INSERT INTO Employees Values (1, 'James', 'IT', 15000)
+INSERT INTO Employees Values (1, 'James', 'IT', 15000)
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
+
+WITH DeleteDuplicateCTE AS
+(
+     SELECT *, ROW_NUMBER() OVER(PARTITION BY ID ORDER BY ID) AS RowNumber
+     FROM Employees
+)
+DELETE FROM DeleteDuplicateCTE WHERE RowNumber > 1
+
