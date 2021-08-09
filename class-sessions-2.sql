@@ -161,4 +161,57 @@ WITH EmployeeCTE  AS
 
 SELECT TOP 1 Salary FROM EmployeeCTE WHERE DenseRank_Salary = 2;
 
+-- Top N pattern
+-- CTE + subquery
 
+with sick_leave as
+(
+select
+s.SalesTerritoryCountry,
+s.SalesTerritoryRegion,
+e.FirstName + e.LastName as EmployeeName,
+e.SickLeaveHours
+             from DimEmployee e
+                          inner join DimSalesTerritory s on s.SalesTerritoryKey =
+e.SalesTerritoryKey
+             where Status = 'Current' and SalesTerritoryCountry != 'NA'
+)
+select * from sick_leave a where EmployeeName in (
+                                                    select top 5 EmployeeName
+                                                    from sick_leave b
+                                                    order by SickLeaveHours desc
+                                                );
+
+-- Top N pattern
+-- rank()
+
+with sick_leave as (
+                    rank()
+                    s.SalesTerritoryCountry,
+                    s.SalesTerritoryRegion,
+                    e.FirstName + e.LastName as EmployeeName,
+                    e.SickLeaveHours,
+                    rank() over (order by SickLeaveHours desc) as RankedLeave
+                                from DimEmployee e
+                                            inner join DimSalesTerritory s on s.SalesTerritoryKey =
+    e.SalesTerritoryKey
+                where Status = 'Current' and SalesTerritoryCountry != 'NA'
+)
+select * from sick_leave a where RankedLeave <= 5;
+
+-- Top N by group pattern
+-- Partitioned rank()
+
+with sick_leave_by_country as (
+                                select
+                                RankedLeave
+                                s.SalesTerritoryCountry,
+                                s.SalesTerritoryRegion,
+                                e.FirstName + e.LastName as EmployeeName,
+                                e.SickLeaveHours,
+                                rank() over (partition by SalesTerritoryCountry order by SickLeaveHours desc ) as
+                                from DimEmployee e
+                                    inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+                                where SalesTerritoryCountry != 'NA'
+)
+select * from sick_leave_by_country where RankedLeave <= 3;
