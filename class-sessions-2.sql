@@ -166,14 +166,14 @@ SELECT TOP 1 Salary FROM EmployeeCTE WHERE DenseRank_Salary = 2;
 
 with sick_leave as
 (
-select
-s.SalesTerritoryCountry,
-s.SalesTerritoryRegion,
-e.FirstName + e.LastName as EmployeeName,
-e.SickLeaveHours
-             from DimEmployee e
-                          inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
-             where Status = 'Current' and SalesTerritoryCountry != 'NA'
+    select
+        s.SalesTerritoryCountry,
+        s.SalesTerritoryRegion,
+        e.FirstName + e.LastName as EmployeeName,
+        e.SickLeaveHours
+    from DimEmployee e
+        inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+    where Status = 'Current' and SalesTerritoryCountry != 'NA'
 )
 select * from sick_leave a where EmployeeName in (
                                                     select top 5 EmployeeName
@@ -186,13 +186,13 @@ select * from sick_leave a where EmployeeName in (
 
 with sick_leave as (
                     select
-                    s.SalesTerritoryCountry,
-                    s.SalesTerritoryRegion,
-                    e.FirstName + e.LastName as EmployeeName,
-                    e.SickLeaveHours,
-                    rank() over (order by SickLeaveHours desc) as RankedLeave
-                                from DimEmployee e
-                                            inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+                        s.SalesTerritoryCountry,
+                        s.SalesTerritoryRegion,
+                        e.FirstName + e.LastName as EmployeeName,
+                        e.SickLeaveHours,
+                        rank() over (order by SickLeaveHours desc) as RankedLeave
+                    from DimEmployee e
+                        inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
                     where Status = 'Current' and SalesTerritoryCountry != 'NA'
 )
 select * from sick_leave a where RankedLeave <= 5;
@@ -202,14 +202,53 @@ select * from sick_leave a where RankedLeave <= 5;
 
 with sick_leave_by_country as (
                                 select
-                                RankedLeave
-                                s.SalesTerritoryCountry,
-                                s.SalesTerritoryRegion,
-                                e.FirstName + e.LastName as EmployeeName,
-                                e.SickLeaveHours,
-                                rank() over (partition by SalesTerritoryCountry order by SickLeaveHours desc ) as RankedLeave
+                                    RankedLeave
+                                    s.SalesTerritoryCountry,
+                                    s.SalesTerritoryRegion,
+                                    e.FirstName + e.LastName as EmployeeName,
+                                    e.SickLeaveHours,
+                                    rank() over (partition by SalesTerritoryCountry order by SickLeaveHours desc ) as RankedLeave
                                 from DimEmployee e
                                     inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
                                 where SalesTerritoryCountry != 'NA'
 )
 select * from sick_leave_by_country where RankedLeave <= 3;
+
+-- Exercises
+-- Simpler is usually better Rewrite this query without the CTE and without the subquery
+
+with sick_leave as
+(
+    select
+        s.SalesTerritoryCountry,
+        s.SalesTerritoryRegion,
+        e.FirstName + e.LastName as EmployeeName,
+        e.SickLeaveHours
+    from DimEmployee e
+        inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+    where Status = 'Current' and SalesTerritoryCountry != 'NA'
+)
+select * from sick_leave a where EmployeeName in (
+    select top 5 EmployeeName
+    from sick_leave b
+    order by SickLeaveHours desc
+);
+
+-- Correlated subquery
+-- Rewrite the query from Slide 11. Remove the rank() function and use a correlated subquery instead.
+-- Compare the performance of these two
+
+ with sick_leave_by_country as
+ (
+     select
+            s.SalesTerritoryCountry,
+            s.SalesTerritoryRegion,
+            e.FirstName + e.LastName as EmployeeName,
+            e.SickLeaveHours
+        from DimEmployee e
+            inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+        where SalesTerritoryCountry != 'NA'
+)
+select * from sick_leave_by_country a
+where EmployeeName in (
+);
