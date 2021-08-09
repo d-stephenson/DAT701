@@ -1,4 +1,4 @@
--- Class Sessions
+-- Class Sessions 1
 -- DAT701 Enterprise Database Systems
 
 USE AdventureWorks2017;

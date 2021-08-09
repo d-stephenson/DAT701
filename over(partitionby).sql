@@ -1,3 +1,6 @@
+-- Class Sessions 2
+-- DAT701 Enterprise Database Systems
+
 -- OVER(PARTITION BY) CLAUSE
 
 -- https://dotnettutorials.net/lesson/over-clause-sql-server/
@@ -81,4 +84,21 @@ SELECT
     AVG(Salary) OVER(PARTITION BY Department) AS AvgSalary,
     MIN(Salary) OVER(PARTITION BY Department) AS MinSalary,
     MAX(Salary) OVER(PARTITION BY Department) AS MaxSalary
+FROM Employees
+
+-- row number
+
+SELECT Name, Department, Salary,
+ROW_NUMBER() OVER (ORDER BY Department) AS RowNumber
+FROM Employees
+
+SELECT 
+    Name, 
+    Department, 
+    Salary,
+    ROW_NUMBER() OVER
+                    (
+                        PARTITION BY Department
+                        ORDER BY Salary
+                    ) AS RowNumber
 FROM Employees
