@@ -23,8 +23,6 @@ INSERT INTO Employees Values (10, 'Anurag', 'Payroll', 15000)
 INSERT INTO Employees Values (11, 'Marshal', 'HR', 55000)
 INSERT INTO Employees Values (12, 'David', 'IT', 96000)
 
--- 
-
 SELECT  Department,
     COUNT(*) AS NoOfEmployees,
     SUM(Salary) AS TotalSalary,
