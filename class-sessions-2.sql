@@ -11,20 +11,21 @@ CREATE TABLE Employees
      Name VARCHAR(50),
      Department VARCHAR(50),
      Salary int
-)
+);
 Go
-INSERT INTO Employees Values (1, 'James', 'IT', 15000)
-INSERT INTO Employees Values (2, 'Smith', 'IT', 35000)
-INSERT INTO Employees Values (3, 'Rasol', 'HR', 15000)
-INSERT INTO Employees Values (4, 'Rakesh', 'Payroll', 35000)
-INSERT INTO Employees Values (5, 'Pam', 'IT', 42000)
-INSERT INTO Employees Values (6, 'Stokes', 'HR', 15000)
-INSERT INTO Employees Values (7, 'Taylor', 'HR', 67000)
-INSERT INTO Employees Values (8, 'Preety', 'Payroll', 67000)
-INSERT INTO Employees Values (9, 'Priyanka', 'Payroll', 55000)
-INSERT INTO Employees Values (10, 'Anurag', 'Payroll', 15000)
-INSERT INTO Employees Values (11, 'Marshal', 'HR', 55000)
-INSERT INTO Employees Values (12, 'David', 'IT', 96000)
+
+INSERT INTO Employees Values (1, 'James', 'IT', 15000);
+INSERT INTO Employees Values (2, 'Smith', 'IT', 35000);
+INSERT INTO Employees Values (3, 'Rasol', 'HR', 15000);
+INSERT INTO Employees Values (4, 'Rakesh', 'Payroll', 35000);
+INSERT INTO Employees Values (5, 'Pam', 'IT', 42000);
+INSERT INTO Employees Values (6, 'Stokes', 'HR', 15000);
+INSERT INTO Employees Values (7, 'Taylor', 'HR', 67000);
+INSERT INTO Employees Values (8, 'Preety', 'Payroll', 67000);
+INSERT INTO Employees Values (9, 'Priyanka', 'Payroll', 55000);
+INSERT INTO Employees Values (10, 'Anurag', 'Payroll', 15000);
+INSERT INTO Employees Values (11, 'Marshal', 'HR', 55000);
+INSERT INTO Employees Values (12, 'David', 'IT', 96000);
 
 SELECT  Department,
     COUNT(*) AS NoOfEmployees,
@@ -33,7 +34,7 @@ SELECT  Department,
     MIN(Salary) AS MinSalary,
     MAX(Salary) AS MaxSalary
 FROM Employees
-GROUP BY Department
+GROUP BY Department;
 
 -- this fails
 
@@ -47,7 +48,7 @@ SELECT
     MIN(Salary) AS MinSalary,
     MAX(Salary) AS MaxSalary
 FROM Employees
-GROUP BY Department
+GROUP BY Department;
 
 -- return results by including all the aggregations in a subquery and then JOINING that subquery with the main query
 
@@ -71,7 +72,7 @@ INNER JOIN
         MAX(Salary) AS MaxSalary
     FROM Employees
     GROUP BY Department) AS Departments
-ON Departments.Department = Employees.Department
+ON Departments.Department = Employees.Department;
 
 -- using the OVER clause combined with the PARTITION BY clause
 
@@ -84,13 +85,13 @@ SELECT
     AVG(Salary) OVER(PARTITION BY Department) AS AvgSalary,
     MIN(Salary) OVER(PARTITION BY Department) AS MinSalary,
     MAX(Salary) OVER(PARTITION BY Department) AS MaxSalary
-FROM Employees
+FROM Employees;
 
 -- row number
 
 SELECT Name, Department, Salary,
 ROW_NUMBER() OVER (ORDER BY Department) AS RowNumber
-FROM Employees
+FROM Employees;
 
 SELECT 
     Name, 
@@ -101,26 +102,26 @@ SELECT
                         PARTITION BY Department
                         ORDER BY Salary
                     ) AS RowNumber
-FROM Employees
+FROM Employees;
 
 -- truncate
 
-INSERT INTO Employees Values (1, 'James', 'IT', 15000)
-INSERT INTO Employees Values (1, 'James', 'IT', 15000)
-INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
-INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
-INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000)
-INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
-INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
-INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
-INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000)
+INSERT INTO Employees Values (1, 'James', 'IT', 15000);
+INSERT INTO Employees Values (1, 'James', 'IT', 15000);
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000);
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000);
+INSERT INTO Employees Values (2, 'Rasol', 'HR', 15000);
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000);
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000);
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000);
+INSERT INTO Employees Values (3, 'Stokes', 'HR', 15000);
 
 WITH DeleteDuplicateCTE AS
 (
      SELECT *, ROW_NUMBER() OVER(PARTITION BY ID ORDER BY ID) AS RowNumber
      FROM Employees
 )
-DELETE FROM DeleteDuplicateCTE WHERE RowNumber > 1
+DELETE FROM DeleteDuplicateCTE WHERE RowNumber > 1;
 
 -- rank
 
