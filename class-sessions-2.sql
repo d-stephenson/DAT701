@@ -172,8 +172,7 @@ s.SalesTerritoryRegion,
 e.FirstName + e.LastName as EmployeeName,
 e.SickLeaveHours
              from DimEmployee e
-                          inner join DimSalesTerritory s on s.SalesTerritoryKey =
-e.SalesTerritoryKey
+                          inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
              where Status = 'Current' and SalesTerritoryCountry != 'NA'
 )
 select * from sick_leave a where EmployeeName in (
@@ -193,9 +192,8 @@ with sick_leave as (
                     e.SickLeaveHours,
                     rank() over (order by SickLeaveHours desc) as RankedLeave
                                 from DimEmployee e
-                                            inner join DimSalesTerritory s on s.SalesTerritoryKey =
-    e.SalesTerritoryKey
-                where Status = 'Current' and SalesTerritoryCountry != 'NA'
+                                            inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+                    where Status = 'Current' and SalesTerritoryCountry != 'NA'
 )
 select * from sick_leave a where RankedLeave <= 5;
 
