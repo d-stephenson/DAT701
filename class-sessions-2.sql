@@ -122,3 +122,23 @@ WITH DeleteDuplicateCTE AS
 )
 DELETE FROM DeleteDuplicateCTE WHERE RowNumber > 1
 
+-- rank
+
+SELECT Name, Department, Salary,
+RANK() OVER (ORDER BY Salary DESC) AS [Rank]
+FROM Employees
+
+SELECT Name, Department, Salary,
+               RANK() OVER (
+                               PARTITION BY Department
+                               ORDER BY Salary DESC) AS [Rank]
+FROM Employees
+
+-- dense rank
+
+SELECT Name, Department, Salary,
+               DENSE_RANK() OVER (
+                               PARTITION BY Department
+                               ORDER BY Salary DESC) AS [DenseRank]
+FROM Employees
+
