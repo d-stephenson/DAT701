@@ -186,7 +186,7 @@ select * from sick_leave a where EmployeeName in (
 -- rank()
 
 with sick_leave as (
-                    rank()
+                    select
                     s.SalesTerritoryCountry,
                     s.SalesTerritoryRegion,
                     e.FirstName + e.LastName as EmployeeName,
