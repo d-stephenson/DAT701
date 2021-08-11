@@ -234,6 +234,18 @@ select * from sick_leave a where EmployeeName in (
     order by SickLeaveHours desc
 );
 
+-- -------------------------------------------------------------------------------------------------------
+
+select top 5
+    s.SalesTerritoryCountry,
+    s.SalesTerritoryRegion,
+    e.FirstName + e.LastName as EmployeeName,
+    e.SickLeaveHours
+from DimEmployee e
+    inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
+where Status = 'Current' and SalesTerritoryCountry != 'NA'
+order by SickLeaveHours desc;
+
 -- Correlated subquery
 -- Rewrite the query from Slide 11. Remove the rank() function and use a correlated subquery instead.
 -- Compare the performance of these two
