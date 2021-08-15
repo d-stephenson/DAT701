@@ -21,7 +21,7 @@ GO
 -- 1A: (5 marks) Write & then run this query and include a screenshot of the results.
 
 select 
-        YEAR(SalesOrderDate),
+        year(SalesOrderDate),
         CountryName,
         SegmentName,
 
