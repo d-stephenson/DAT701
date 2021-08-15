@@ -21,7 +21,7 @@ GO
 -- 1A: (5 marks) Write & then run this query and include a screenshot of the results.
 
 select
-    year(so.SalesOrderDate) as SalesYear,
+    year(SalesOrderDate) as SalesYear,
     CountryName,
     SegmentName,
     round(sum(SalePrice), 2) as TotalSale,
@@ -40,7 +40,7 @@ from SalesOrderLineItem li
     inner join ProductCost pc
     on c.CountryID = pc.CountryID
 group by
-    year(so.SalesOrderDate),
+    year(SalesOrderDate),
     CountryName,
     SegmentName
 order by
