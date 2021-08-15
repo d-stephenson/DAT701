@@ -20,6 +20,12 @@ GO
 
 -- 1A: (5 marks) Write & then run this query and include a screenshot of the results.
 
+select 
+        YEAR(SalesOrderDate),
+        CountryName,
+        SegmentName,
+
+
 -- 1B: (5 marks) Produce one or more visualisations using PowerBI to display this information.
 -- Based on your visualisations, which region performed the best? Which region performed the worst?
 
