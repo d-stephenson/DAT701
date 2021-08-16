@@ -75,6 +75,26 @@ group by
 -- 2B: (4 marks):
 -- Once you have calculated this KPI, calculate the yearly performance against the KPI (i.e. if the KPI for Mexico, Midmarket is $100,000 and the total sales was $110,000, then the yearly performance would be 110%). Include your t-sql below.
 
+select
+    SalesYear,
+    CountryName,
+    SegmentName,
+    sum(KPI) as TotalYearlyKPI,
+    sum(SalePrice) as TotalSalesPrice,
+    sum(SalePrice / KPI) * 100 as PerformancePercentage
+from SalesPerson sp
+    inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+    inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+    inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+    inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+group by
+    SalesYear,
+    CountryName,
+    SegmentName;
+
 -- 2C: (2 marks) Produce one or more visualisations in PowerBI to show this information.
 
 -- Query A3 (8 marks)
