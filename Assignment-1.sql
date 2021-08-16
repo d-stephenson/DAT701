@@ -194,6 +194,71 @@ order by
 
 -- Unfortunately, the business analyst’s query is way too slow to run in real time. The analyst’s query is available from here. Your job is to rewrite this query so that it is scalable (can run over large amounts of historical data and is quick enough to run in real-time).
 
+select
+	basic_metrics.SalesOrderDate,
+	basic_metrics.SalesOrderNumber,
+	basic_metrics.SalesPersonID,
+	margin_calculation.SalesOrderID,
+	basic_metrics.TotalSalesPrice,
+	basic_metrics.TotalCost,
+	basic_metrics.TotalRRP,
+	basic_metrics.UniqueItems,
+	basic_metrics.TotalItems,
+	round(margin_calculation.Margin, 2) as Margin,
+	round(discount_calculation.PercentageDiscount, 2) as PercentageDiscount
+from (
+
+	-- Calculate Discount
+	select
+		so.SalesOrderID,
+		sum((pc.RRP * sli.UnitsSold) - SalePrice) / sum(pc.RRP * sli.UnitsSold) as PercentageDiscount
+	from SalesOrder so
+		inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+		inner join ProductCost pc on pc.ProductID = sli.ProductID
+	group by 
+		so.SalesOrderID
+) discount_calculation
+	inner join (
+
+		-- Calculate Margin
+		select
+			so.SalesOrderID,
+			case 
+				when sum(SalePrice) = 0 then 0 
+				else sum(SalePrice - (pc.ManufacturingPrice * sli.UnitsSold)) / sum(SalePrice) 
+			end as Margin
+		from SalesOrder so
+			inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+			inner join ProductCost pc on pc.ProductID = sli.ProductID
+		group by 
+			so.SalesOrderID
+	) margin_calculation on margin_calculation.SalesOrderID = discount_calculation.SalesOrderID
+	inner join (
+
+	-- basic metrics
+	select 
+		so.SalesOrderID,
+		so.SalesOrderNumber,
+		so.SalesOrderDate,
+		so.SalesPersonID,
+		so.SalesMonth,
+		sum(sli.SalePrice) as TotalSalesPrice,
+		sum(pc.ManufacturingPrice * sli.UnitsSold) as TotalCost,
+		sum(pc.RRP * sli.UnitsSold) as TotalRRP,
+		count(distinct sli.ProductID) as UniqueItems,
+		sum(UnitsSold) as TotalItems
+	from SalesOrder so
+		inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+		inner join ProductCost pc on pc.ProductID = sli.ProductID
+	group by 
+		so.SalesOrderID,
+		so.SalesOrderNumber,
+		so.SalesOrderDate,
+		so.SalesPersonID,
+		so.SalesMonth
+) basic_metrics on basic_metrics.SalesOrderID = margin_calculation.SalesOrderID
+where SalesOrderDate > '2016-01-01'
+
 -- Question C1: 10 marks
 -- Review the query execution plan and clearly describe why this query will not scale well.
 
