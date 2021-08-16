@@ -51,9 +51,26 @@ order by
 -- Each sales person has a yearly sales KPI. This is their yearly sales target which they are expected to meet. I’d like you to use this information to calculate a yearly sales KPI for each Country and Segment: 
 -- For all Countries (c):
 -- For all Segments (s):
+
 -- YearlySale〖sKPI〗_(c,s)   = ∑_n 〖StaffYearlySalesKPI〗_n,for all Staff (n | c,s)〗_
 
 -- Include your t-sql below.
+
+select
+    SalesYear,
+    CountryName,
+    SegmentName,
+    sum(KPI) as TotalYearlyKPI
+from SalesPerson sp
+    inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+    inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+group by
+    SalesYear,
+    CountryName,
+    SegmentName;
 
 -- 2B: (4 marks):
 -- Once you have calculated this KPI, calculate the yearly performance against the KPI (i.e. if the KPI for Mexico, Midmarket is $100,000 and the total sales was $110,000, then the yearly performance would be 110%). Include your t-sql below.
