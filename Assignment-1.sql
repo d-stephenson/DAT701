@@ -25,7 +25,7 @@ select
     CountryName,
     SegmentName,
     round(sum(SalePrice), 2) as TotalSale,
-    round(sum(SalePrice - (ManufacturingPrice * UnitsSold)), 2) as GrossProfit
+    round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
 from SalesOrderLineItem li
     inner join SalesOrder so
     on li.SalesOrderID = so.SalesOrderID
