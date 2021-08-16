@@ -27,18 +27,12 @@ select
     round(sum(SalePrice), 2) as TotalSale,
     round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
 from SalesOrderLineItem li
-    inner join SalesOrder so
-    on li.SalesOrderID = so.SalesOrderID
-    inner join SalesRegion sr
-    on so.SalesRegionID = sr.SalesRegionID
-    inner join Region r
-    on sr.RegionID = r.RegionID
-    inner join Segment s
-    on r.SegmentID = s.SegmentID
-    inner join Country c
-    on r.CountryID = c.CountryID
-    inner join ProductCost pc
-    on c.CountryID = pc.CountryID
+    inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
+    inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+    inner join ProductCost pc on c.CountryID = pc.CountryID
 group by
     year(SalesOrderDate),
     CountryName,
