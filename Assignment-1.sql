@@ -156,6 +156,68 @@ order by
 
 -- Include your t-sql and a screenshot of your visualisations below.
 
+
+with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as  
+    (
+    select
+        SalesYear,
+        CountryName,
+        SegmentName,
+        round(sum(KPI) / 12, 2) as TotalMonthlyKPI
+    from SalesPerson sp
+        inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+        inner join Region r on sr.RegionID = r.RegionID
+        inner join Segment s on r.SegmentID = s.SegmentID
+        inner join Country c on r.CountryID = c.CountryID
+    group by
+        SalesYear,
+        CountryName,
+        SegmentName
+    ),
+    performance_cte(OrderYear, OrderMonth, CountryName, SegmentName, TotalSalesPrice) as  
+    (
+    select
+        year(SalesOrderDate) as OrderYear,
+        datename(month, SalesOrderDate) as OrderMonth,
+        CountryName,
+        SegmentName,
+        sum(SalePrice) as TotalSalesPrice
+    from SalesRegion sr
+        inner join Region r on sr.RegionID = r.RegionID
+        inner join Segment s on r.SegmentID = s.SegmentID
+        inner join Country c on r.CountryID = c.CountryID
+        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+        inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+    group by
+        year(SalesOrderDate),
+        datename(month, SalesOrderDate),
+        CountryName,
+        SegmentName
+    )
+select
+    performance_cte.OrderYear,
+    performance_cte.OrderMonth,
+    salesprice_cte.CountryName,
+    salesprice_cte.SegmentName,
+    TotalMonthlyKPI,
+    TotalSalesPrice,
+    round(sum((TotalSalesPrice / TotalMonthlyKPI) * 100), 2) as AnnualPerformance
+from salesprice_cte
+    Inner join performance_cte on salesprice_cte.SalesYear = performance_cte.OrderYear
+        and salesprice_cte.CountryName = performance_cte.CountryName
+        and salesprice_cte.SegmentName = performance_cte.SegmentName
+group by
+    performance_cte.OrderYear,
+    performance_cte.OrderMonth,
+    salesprice_cte.CountryName,
+    salesprice_cte.SegmentName,
+    TotalMonthlyKPI,
+    TotalSalesPrice
+order by
+    OrderYear;
+
+
 -- 3B: What general conclusions can you draw from this visualisation? Justify your reasoning. (4 marks)
 
 -- Query A4 (15 marks)
