@@ -79,21 +79,75 @@ select
     SalesYear,
     CountryName,
     SegmentName,
-    sum(KPI) as TotalYearlyKPI,
-    sum(SalePrice) as TotalSalesPrice,
-    sum(SalePrice / KPI) * 100 as PerformancePercentage
+    sum(KPI) as TotalYearlyKPI
 from SalesPerson sp
     inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
     inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
     inner join Region r on sr.RegionID = r.RegionID
     inner join Segment s on r.SegmentID = s.SegmentID
     inner join Country c on r.CountryID = c.CountryID
-    inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
-    inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
 group by
     SalesYear,
     CountryName,
     SegmentName;
+
+-- Q2B
+
+with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as  
+    (
+    select
+        SalesYear,
+        CountryName,
+        SegmentName,
+        sum(KPI) as TotalYearlyKPI
+    from SalesPerson sp
+        inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+        inner join Region r on sr.RegionID = r.RegionID
+        inner join Segment s on r.SegmentID = s.SegmentID
+        inner join Country c on r.CountryID = c.CountryID
+    group by
+        SalesYear,
+        CountryName,
+        SegmentName
+    ),
+    performance_cte(SalesYear, CountryName, SegmentName, TotalSalesPrice) as  
+    (
+    select
+        year(SalesOrderDate) as OrderYear,
+        CountryName,
+        SegmentName,
+        sum(SalePrice) as TotalSalesPrice
+    from SalesRegion sr
+        inner join Region r on sr.RegionID = r.RegionID
+        inner join Segment s on r.SegmentID = s.SegmentID
+        inner join Country c on r.CountryID = c.CountryID
+        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+        inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+    group by
+        year(SalesOrderDate),
+        CountryName,
+        SegmentName
+    )
+select
+    salesprice_cte.SalesYear,
+    salesprice_cte.CountryName,
+    salesprice_cte.SegmentName,
+    TotalYearlyKPI,
+    TotalSalesPrice,
+    round(sum((TotalSalesPrice / TotalYearlyKPI) * 100), 2) as AnnualPerformance
+from salesprice_cte
+    Inner join performance_cte on salesprice_cte.SalesYear = performance_cte.SalesYear
+        and salesprice_cte.CountryName = performance_cte.CountryName
+        and salesprice_cte.SegmentName = performance_cte.SegmentName
+group by
+    salesprice_cte.SalesYear,
+    salesprice_cte.CountryName,
+    salesprice_cte.SegmentName,
+    TotalYearlyKPI,
+    TotalSalesPrice
+order by
+    SalesYear;
 
 -- 2C: (2 marks) Produce one or more visualisations in PowerBI to show this information.
 
