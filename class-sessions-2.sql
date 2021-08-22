@@ -207,7 +207,7 @@ with sick_leave_by_country as (
                                     s.SalesTerritoryRegion,
                                     e.FirstName + e.LastName as EmployeeName,
                                     e.SickLeaveHours,
-                                    rank() over (partition by SalesTerritoryCountry order by SickLeaveHours desc ) as RankedLeave
+                                    rank() over (partition by SalesTerritoryCountry order by SickLeaveHours desc) as RankedLeave
                                 from DimEmployee e
                                     inner join DimSalesTerritory s on s.SalesTerritoryKey = e.SalesTerritoryKey
                                 where SalesTerritoryCountry != 'NA'

@@ -227,6 +227,174 @@ order by
 
 -- 4B (6 marks): Create a query & one or more visualisations that allows the company to explore the performance of their salespeople. Include the t-sql and a screenshot of the visualisations below.
 
+select
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    dense_rank() over (order by round(sum(SalePrice), 2) desc) as SalesRank,
+    round(sum(SalePrice), 2) as TotalSales
+from SalesPerson sp
+    inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+    inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+    inner join Product p on li.ProductID = p.ProductID
+    inner join ProductCost pc on p.ProductID = pc.ProductID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName;
+
+-- Gross profit ranked for each sales rep in 2016
+
+select
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    dense_rank() over (order by round(sum(SalePrice - ManufacturingPrice), 2) desc) as GrossProfitRank,
+    round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
+from SalesPerson sp
+    inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+    inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+    inner join Product p on li.ProductID = p.ProductID
+    inner join ProductCost pc on p.ProductID = pc.ProductID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName;
+
+-- Top 10 sales representatives bases on total sales and gross profits
+
+with salesrank_cte(SalesRepName, SalesRank, TotalSales) as
+    (
+    select
+        concat(FirstName, ' ', LastName) as SalesRepName,
+        dense_rank() over (order by round(sum(SalePrice), 2) desc) as SalesRank,
+        round(sum(SalePrice), 2) as TotalSales
+    from SalesPerson sp
+        inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+        inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+        inner join Product p on li.ProductID = p.ProductID
+        inner join ProductCost pc on p.ProductID = pc.ProductID
+    where
+        year(SalesOrderDate) = 2016
+    group by
+        LastName,
+        FirstName
+    ),
+    grossprofitrank_cte(SalesRepName, GrossProfitRank, GrossProfit) as
+    (
+    select
+        concat(FirstName, ' ', LastName) as SalesRepName,
+        dense_rank() over (order by round(sum(SalePrice - ManufacturingPrice), 2) desc) as GrossProfitRank,
+        round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
+    from SalesPerson sp
+        inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+        inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+        inner join Product p on li.ProductID = p.ProductID
+        inner join ProductCost pc on p.ProductID = pc.ProductID
+    where
+        year(SalesOrderDate) = 2016
+    group by
+        LastName,
+        FirstName
+    )
+select top 10
+    salesrank_cte.SalesRepName,
+    SalesRank,
+    GrossProfitRank
+from salesrank_cte
+    inner join grossprofitrank_cte on salesrank_cte.SalesRepName = grossprofitrank_cte.SalesRepName
+order by
+    SalesRank,
+    GrossProfitRank;
+
+-- All sales representatives by country ranked by sales in 2016
+
+select
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    CountryName,
+    dense_rank() over (order by round(sum(SalePrice), 2) desc) as SalesRank,
+    round(sum(SalePrice), 2) as TotalSales,
+    round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
+from SalesPerson sp
+    inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+    inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
+    inner join Product p on li.ProductID = p.ProductID
+    inner join ProductCost pc on p.ProductID = pc.ProductID
+    inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName,
+    CountryName;
+
+-- All sales representatives by country and segment ranked by sales in 2016
+
+select
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    CountryName,
+    SegmentName,
+    dense_rank() over (order by round(sum(SalePrice), 2) desc) as SalesRank,
+    round(sum(SalePrice), 2) as TotalSales,
+    round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
+from SalesOrderLineItem li
+    inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
+    inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+    inner join ProductCost pc on c.CountryID = pc.CountryID
+    inner join SalesPerson sp on so.SalesPersonID = sp.SalesPersonID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName,
+    CountryName,
+    SegmentName;
+
+-- Top 5 sales representatives by country and segment ranked by sales in 2016
+
+select top 5
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    CountryName,
+    SegmentName,
+    dense_rank() over (order by round(sum(SalePrice), 2) desc) as SalesRank,
+    round(sum(SalePrice), 2) as TotalSales,
+    round(sum(SalePrice - ManufacturingPrice), 2) as GrossProfit
+from SalesOrderLineItem li
+    inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
+    inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+    inner join Region r on sr.RegionID = r.RegionID
+    inner join Segment s on r.SegmentID = s.SegmentID
+    inner join Country c on r.CountryID = c.CountryID
+    inner join ProductCost pc on c.CountryID = pc.CountryID
+    inner join SalesPerson sp on so.SalesPersonID = sp.SalesPersonID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName,
+    CountryName,
+    SegmentName;
+
+-- Best ranking performance against KPI's in 2016
+
+select
+    concat(FirstName, ' ', LastName) as SalesRepName,
+    dense_rank() over (order by round(sum((SalePrice / KPI) * 100), 2) desc) as KPIPerformance
+from SalesOrderLineItem li
+    inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
+    inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+    inner join SalesPerson sp on so.SalesPersonID = sp.SalesPersonID
+    inner join SalesKPI sl on sp.SalesPersonID = sl.SalesPersonID
+where
+    year(SalesOrderDate) = 2016
+group by
+    LastName,
+    FirstName;
+
 -- 4C (3 marks): Using your results, which salespeople do you believe are the “top 10 best performers”?
 
 -- Section B - Query Performance and indexing (a total of 40 marks)

@@ -92,7 +92,6 @@ WITH MaxCount_CTE(Sales_Year, SalesReasonName, SRN_Count) AS
         YEAR(OrderDate),
         SalesReasonName
     )
-
 SELECT Sales_year, MAX(SRN_Count) AS MaxCount
 FROM MaxCount_CTE
 GROUP BY
@@ -112,8 +111,7 @@ WITH MaxCount_CTE(Sales_Year, SalesReasonName, SRN_Count) AS
     GROUP BY
         YEAR(OrderDate),
         SalesReasonName
-    )
-    ,
+    ),
     MaxYearCount_CTE(Sales_Year, MaxCount) AS
     (
     SELECT Sales_Year, MAX(SRN_Count) AS MaxCount
