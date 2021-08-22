@@ -75,24 +75,6 @@ group by
 -- 2B: (4 marks):
 -- Once you have calculated this KPI, calculate the yearly performance against the KPI (i.e. if the KPI for Mexico, Midmarket is $100,000 and the total sales was $110,000, then the yearly performance would be 110%). Include your t-sql below.
 
-select
-    SalesYear,
-    CountryName,
-    SegmentName,
-    sum(KPI) as TotalYearlyKPI
-from SalesPerson sp
-    inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-    inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-    inner join Region r on sr.RegionID = r.RegionID
-    inner join Segment s on r.SegmentID = s.SegmentID
-    inner join Country c on r.CountryID = c.CountryID
-group by
-    SalesYear,
-    CountryName,
-    SegmentName;
-
--- Q2B
-
 with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as  
     (
     select
@@ -155,7 +137,6 @@ order by
 -- 3A: A lot of information about sales performance is lost when it is aggregated yearly. Change your query from (Query Two 2B) to calculate the month-by-month total sales performances and plot these data in PowerBI. (4 marks)
 
 -- Include your t-sql and a screenshot of your visualisations below.
-
 
 with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as  
     (
