@@ -137,7 +137,7 @@ select
     TotalSalesPrice,
     round(sum((TotalSalesPrice / TotalYearlyKPI) * 100), 2) as AnnualPerformance
 from salesprice_cte
-    Inner join performance_cte on salesprice_cte.SalesYear = performance_cte.SalesYear
+    inner join performance_cte on salesprice_cte.SalesYear = performance_cte.SalesYear
         and salesprice_cte.CountryName = performance_cte.CountryName
         and salesprice_cte.SegmentName = performance_cte.SegmentName
 group by
@@ -179,7 +179,7 @@ with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as
     (
     select
         year(SalesOrderDate) as OrderYear,
-        datename(month, SalesOrderDate) as OrderMonth,
+        left(datename(month, SalesOrderDate), 3) as OrderMonth,
         CountryName,
         SegmentName,
         sum(SalePrice) as TotalSalesPrice
@@ -191,7 +191,7 @@ with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as
         inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
     group by
         year(SalesOrderDate),
-        datename(month, SalesOrderDate),
+        left(datename(month, SalesOrderDate), 3),
         CountryName,
         SegmentName
     )
@@ -204,7 +204,7 @@ select
     TotalSalesPrice,
     round(sum((TotalSalesPrice / TotalMonthlyKPI) * 100), 2) as AnnualPerformance
 from salesprice_cte
-    Inner join performance_cte on salesprice_cte.SalesYear = performance_cte.OrderYear
+    inner join performance_cte on salesprice_cte.SalesYear = performance_cte.OrderYear
         and salesprice_cte.CountryName = performance_cte.CountryName
         and salesprice_cte.SegmentName = performance_cte.SegmentName
 group by
