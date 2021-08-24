@@ -420,7 +420,9 @@ group by
 
 -- B1C (5 marks): Design an index to remove the clustered index scan on SalesOrderLineItem. Include the t-sql you used to create the index.
 
--- Remove clustered index scan and add nonclustered index scan
+
+-- Remove clustered index scan and add nonclustered index scan on column IDs
+-- 12 second query time
 
 exec sp_helpindex 'SalesOrderLineItem';
 go
@@ -439,12 +441,24 @@ on SalesOrderLineItem
     (SalesOrderLineItemID asc, SalesOrderID, PromotionID, ProductID);
 go
 
--- Remove nonclustered index scan and re-add clustered index scan
+-- Update nonclustered index scan on column IDs required by query
+-- 12 second query time
 
 exec sp_helpindex 'SalesOrderLineItem';
 go
 
-alter table SalesOrderLineItem drop constraint IX_SalesOrderLineItem;
+drop index if exists IX_SalesOrderLineItem on SalesOrderLineItem;
+go
+
+create nonclustered index IX_SalesOrderLineItem
+on SalesOrderLineItem
+    (PromotionID, ProductID);
+go
+
+-- Remove nonclustered index scan and re-add clustered index scan
+-- 12 second query time
+
+exec sp_helpindex 'SalesOrderLineItem';
 go
 
 drop index if exists IX_SalesOrderLineItem on SalesOrderLineItem;
