@@ -387,38 +387,40 @@ group by
 -- Question B1 (20 marks)
 -- Run the following query and review the execution plan:
 
-        -- select 
-        -- 	year(so.SalesOrderDate) as SalesYear,
-        -- 	c.CountryName,
-        -- 	s.SegmentName,
-        -- 	sp.FirstName,
-        -- 	sp.LastName,
-        -- 	p.ProductName,
-        -- 	count(*) as TotalProductSales,
-        -- 	sum(case when sli.PromotionID = 0 then 0 else 1 end) as TotalPromotionalSales
-        -- from SalesOrderLineItem sli
-        -- 	inner join Product p on p.ProductID = sli.ProductID
-        -- 	inner join SalesOrder so on so.SalesOrderID = sli.SalesOrderID
-        -- 	inner join SalesRegion sr on sr.SalesRegionID = so.SalesRegionID
-        -- 	inner join SalesPerson sp on sp.SalesPersonID = sr.SalesPersonID
-        -- 	inner join Region r on r.RegionID = sr.RegionID
-        -- 	inner join Segment s on s.SegmentID = r.SegmentID
-        -- 	inner join Country c on c.CountryID = r.CountryID
-        -- where year(so.SalesOrderDate) > 2012
-        -- group by
-        -- 	year(so.SalesOrderDate),
-        -- 	c.CountryName,
-        -- 	s.SegmentName,
-        -- 	sp.FirstName,
-        -- 	sp.LastName,
-        -- 	p.ProductName
-        -- ;
+select 
+	year(so.SalesOrderDate) as SalesYear,
+	c.CountryName,
+	s.SegmentName,
+	sp.FirstName,
+	sp.LastName,
+	p.ProductName,
+	count(*) as TotalProductSales,
+	sum(case when sli.PromotionID = 0 then 0 else 1 end) as TotalPromotionalSales
+from SalesOrderLineItem sli
+	inner join Product p on p.ProductID = sli.ProductID
+	inner join SalesOrder so on so.SalesOrderID = sli.SalesOrderID
+	inner join SalesRegion sr on sr.SalesRegionID = so.SalesRegionID
+	inner join SalesPerson sp on sp.SalesPersonID = sr.SalesPersonID
+	inner join Region r on r.RegionID = sr.RegionID
+	inner join Segment s on s.SegmentID = r.SegmentID
+	inner join Country c on c.CountryID = r.CountryID
+where year(so.SalesOrderDate) > 2012
+group by
+	year(so.SalesOrderDate),
+	c.CountryName,
+	s.SegmentName,
+	sp.FirstName,
+	sp.LastName,
+	p.ProductName
+;
 
 -- B1A (3 marks): What are the most expensive operations in this query execution plan? Include the relative cost of each operation you identify.
 
 -- B1B (4 marks): What is a clustered index scan? Why can this be a problem for performance? When would it not be a major concern?
 
 -- B1C (5 marks): Design an index to remove the clustered index scan on SalesOrderLineItem. Include the t-sql you used to create the index.
+
+
 
 -- B1D (2 marks): After creating your index, review the execution plan again. Did this index substantially reduce the relative execution cost of querying data from SalesOrderLineItems? 
 
@@ -431,33 +433,33 @@ group by
 -- Question B2 (20 marks) 
 -- Review the following query:
 
-        -- with monthly_sales_info as (
-        -- 	select
-        -- 		sales_info.SalesMonth,
-        -- 		c.CountryName,
-        -- 		s.SegmentName,
-        -- 		sales_info.PromotionRate,
-        -- 		sales_info.TotalMonthlySales
-        -- 	from Region r 
-        -- 		inner join Country c on c.CountryID = r.CountryID
-        -- 		inner join Segment s on s.SegmentID = r.SegmentID
-        -- 		inner join SalesRegion sr on sr.RegionID = r.RegionID
-        -- 		left join (
-        -- 			select 
-        -- 				so.SalesRegionID,
-        -- 				so.SalesMonth,
-        -- 				sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
-        -- 				sum(SalePrice) as TotalMonthlySales
-        -- 			from SalesOrder so
-        -- 				inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
-        -- 			group by 
-        -- 				so.SalesRegionID,
-        -- 				so.SalesMonth
-        -- 		) sales_info on sales_info.SalesRegionID = sr.SalesRegionID
-        -- )
-        -- select *
-        -- from monthly_sales_info
-        -- where SalesMonth >= '2016-01-01';
+with monthly_sales_info as (
+	select
+		sales_info.SalesMonth,
+		c.CountryName,
+		s.SegmentName,
+		sales_info.PromotionRate,
+		sales_info.TotalMonthlySales
+	from Region r 
+		inner join Country c on c.CountryID = r.CountryID
+		inner join Segment s on s.SegmentID = r.SegmentID
+		inner join SalesRegion sr on sr.RegionID = r.RegionID
+		left join (
+			select 
+				so.SalesRegionID,
+				so.SalesMonth,
+				sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
+				sum(SalePrice) as TotalMonthlySales
+			from SalesOrder so
+				inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+			group by 
+				so.SalesRegionID,
+				so.SalesMonth
+		) sales_info on sales_info.SalesRegionID = sr.SalesRegionID
+)
+select *
+from monthly_sales_info
+where SalesMonth >= '2016-01-01';
 
 -- B2A (5 marks): In simple terms, explain the business question which this query is addressing.
 
