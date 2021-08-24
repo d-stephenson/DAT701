@@ -264,3 +264,41 @@ order by SickLeaveHours desc;
 select * from sick_leave_by_country a
 where EmployeeName in (
 );
+
+-- Clustered & Non-Clustered Index
+
+USE AdventureWorks2017;
+GO
+
+CREATE NONCLUSTERED INDEX IX_PurchaseOrderDetail_RejectedQty
+ON Purchasing.PurchaseOrderDetail
+    (RejectedQty DESC, ProductID ASC, DueDate, OrderQty);
+GO
+
+DROP INDEX IF EXISTS IX_PurchaseOrderDetail_RejectedQty ON Purchasing.PurchaseOrderDetail;
+GO
+
+EXEC sp_helpindex 'Purchasing.PurchaseOrderDetail';
+GO
+
+SELECT * FROM Purchasing.PurchaseOrderDetail;
+GO
+
+-- 1. Drop Primary key constraint
+
+ALTER TABLE Purchasing.PurchaseOrderDetail DROP CONSTRAINT PK_PurchaseOrderDetail_PurchaseOrderID_PurchaseOrderDetailID;
+GO
+
+-- 2. Drop Clustered index
+
+DROP INDEX IF EXISTS PK_PurchaseOrderDetail_PurchaseOrderID_PurchaseOrderDetailID ON Purchasing.PurchaseOrderDetail;
+GO
+-- DROP INDEX [IX_Address_xyz] ON [dbo].[Address-Copy] WITH ( ONLINE = OFF )
+
+-- 3. Create Primary Key constraint on column (default it will be clustered)
+
+ALTER TABLE Purchasing.PurchaseOrderDetail ADD CONSTRAINT IX_PurchaseOrderDetail PRIMARY KEY CLUSTERED
+(
+PurchaseOrderID ASC, PurchaseOrderDetailID ASC, ProductID
+);
+GO
