@@ -420,7 +420,40 @@ group by
 
 -- B1C (5 marks): Design an index to remove the clustered index scan on SalesOrderLineItem. Include the t-sql you used to create the index.
 
+-- Remove clustered index scan and add nonclustered index scan
 
+exec sp_helpindex 'SalesOrderLineItem';
+go
+
+alter table SalesOrderLineItem drop constraint PK__SalesOrd__DAA33720861CAF46;
+go
+
+drop index if exists PK__SalesOrd__DAA33720861CAF46 on SalesOrderLineItem;
+go
+
+select top 10 * from SalesOrderLineItem;
+go
+
+create nonclustered index IX_SalesOrderLineItem
+on SalesOrderLineItem
+    (SalesOrderLineItemID asc, SalesOrderID, PromotionID, ProductID);
+go
+
+-- Remove nonclustered index scan and re-add clustered index scan
+
+exec sp_helpindex 'SalesOrderLineItem';
+go
+
+alter table SalesOrderLineItem drop constraint IX_SalesOrderLineItem;
+go
+
+drop index if exists IX_SalesOrderLineItem on SalesOrderLineItem;
+go
+
+create clustered index PK__SalesOrd__DAA33720861CAF46
+on SalesOrderLineItem
+    (SalesOrderLineItemID);
+go
 
 -- B1D (2 marks): After creating your index, review the execution plan again. Did this index substantially reduce the relative execution cost of querying data from SalesOrderLineItems? 
 
