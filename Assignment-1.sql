@@ -420,7 +420,6 @@ group by
 
 -- B1C (5 marks): Design an index to remove the clustered index scan on SalesOrderLineItem. Include the t-sql you used to create the index.
 
-
 -- Remove clustered index scan and add nonclustered index scan on column IDs
 -- 12 second query time
 
@@ -521,6 +520,35 @@ where SalesMonth >= '2016-01-01';
 -- 	Drop this index and create a suitable index to improve the execution of this query. Include a screenshot of the new execution plan. (2 marks)
 
 -- 	Has your index improved the part of the execution plan that you expected it to? (i.e. has it substantially decreased the execution cost of this part of the plan?). If so, why? If not, what has it done? (4 marks)
+
+-- Test create index
+
+create index idx_promotions on SalesOrderLineItem(PromotionID, SalesOrderID);
+go
+
+exec sp_helpindex 'SalesOrderLineItem';
+go
+
+-- Drop index and create a new execution plan
+
+drop index if exists idx_promotions on SalesOrderLineItem;
+go
+
+create nonclustered index IX_PromotionsGrouped
+on SalesOrderLineItem
+    (PromotionID, SalesOrderID, SalePrice);
+go
+
+drop index if exists IX_PromotionsGrouped on SalesOrderLineItem;
+go
+
+create nonclustered index IX_PromotionsGrouped_2
+on SalesOrderLineItem
+    (PromotionID, SalesOrderID, SalePrice, UnitsSold);
+go
+
+drop index if exists IX_PromotionsGrouped_2 on SalesOrderLineItem;
+go
 
 -- B2C (5 marks)
 -- Have a careful look at the results from the query above. Notice that there is a row for each Country / Segment every month. Adjust this query so that it only returns the Country / Segment with the highest TotalMonthlySales in each month. You should get 12 rows. 
