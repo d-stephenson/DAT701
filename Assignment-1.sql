@@ -1,11 +1,13 @@
 -- Assignment 1 | DAT701
 
-USE FinanceDB
-GO
-SELECT SUSER_SNAME(sid), * from sys.database_principals
+use FinanceDB
+go
 
-ALTER AUTHORIZATION ON DATABASE::[FinanceDB] TO [sa]
-GO
+select suser_sname(sid), * from sys.database_principals
+
+alter authorization on database::[FinanceDB] to [sa]
+go
+
 
 -- Section A - Query Writing (a total of 43 marks)
  
@@ -19,6 +21,7 @@ GO
 -- Profit = SalePrice - (ManufacturingPrice x UnitsSold)
 
 -- 1A: (5 marks) Write & then run this query and include a screenshot of the results.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     year(SalesOrderDate) as SalesYear,
@@ -41,6 +44,7 @@ order by
     SalesYear,
     CountryName,
     SegmentName;
+go
 
 -- 1B: (5 marks) Produce one or more visualisations using PowerBI to display this information.
 -- Based on your visualisations, which region performed the best? Which region performed the worst?
@@ -55,6 +59,7 @@ order by
 -- YearlySale〖sKPI〗_(c,s)   = ∑_n 〖StaffYearlySalesKPI〗_n,for all Staff (n | c,s)〗_
 
 -- Include your t-sql below.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     SalesYear,
@@ -71,9 +76,11 @@ group by
     SalesYear,
     CountryName,
     SegmentName;
+go
 
 -- 2B: (4 marks):
 -- Once you have calculated this KPI, calculate the yearly performance against the KPI (i.e. if the KPI for Mexico, Midmarket is $100,000 and the total sales was $110,000, then the yearly performance would be 110%). Include your t-sql below.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as  
     (
@@ -130,6 +137,7 @@ group by
     TotalSalesPrice
 order by
     SalesYear;
+go
 
 -- 2C: (2 marks) Produce one or more visualisations in PowerBI to show this information.
 
@@ -137,6 +145,7 @@ order by
 -- 3A: A lot of information about sales performance is lost when it is aggregated yearly. Change your query from (Query Two 2B) to calculate the month-by-month total sales performances and plot these data in PowerBI. (4 marks)
 
 -- Include your t-sql and a screenshot of your visualisations below.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as  
     (
@@ -197,7 +206,7 @@ group by
     TotalSalesPrice
 order by
     OrderYear;
-
+go
 
 -- 3B: What general conclusions can you draw from this visualisation? Justify your reasoning. (4 marks)
 
@@ -207,6 +216,9 @@ order by
 -- 4A: (6 marks) Explain how could you rank & compare each salesperson’s performance? 
 
 -- 4B (6 marks): Create a query & one or more visualisations that allows the company to explore the performance of their salespeople. Include the t-sql and a screenshot of the visualisations below.
+
+-- Total sales ranked for each sales rep in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -222,8 +234,10 @@ where
 group by
     LastName,
     FirstName;
+go
 
 -- Gross profit ranked for each sales rep in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -239,8 +253,10 @@ where
 group by
     LastName,
     FirstName;
+go
 
 -- Top 10 sales representatives bases on total sales and gross profits
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 with salesrank_cte(SalesRepName, SalesRank, TotalSales) as
     (
@@ -285,8 +301,10 @@ from salesrank_cte
 order by
     SalesRank,
     GrossProfitRank;
+go
 
 -- All sales representatives by country ranked by sales in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -309,8 +327,10 @@ group by
     LastName,
     FirstName,
     CountryName;
+go
 
 -- All sales representatives by country and segment ranked by sales in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -334,8 +354,10 @@ group by
     FirstName,
     CountryName,
     SegmentName;
+go
 
 -- Top 5 sales representatives by country and segment ranked by sales in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select top 5
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -359,8 +381,10 @@ group by
     FirstName,
     CountryName,
     SegmentName;
+go
 
 -- Best ranking performance against KPI's in 2016
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     concat(FirstName, ' ', LastName) as SalesRepName,
@@ -375,6 +399,7 @@ where
 group by
     LastName,
     FirstName;
+go
 
 -- 4C (3 marks): Using your results, which salespeople do you believe are the “top 10 best performers”?
 
@@ -386,42 +411,45 @@ group by
  
 -- Question B1 (20 marks)
 -- Run the following query and review the execution plan:
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-select 
-	year(so.SalesOrderDate) as SalesYear,
-	c.CountryName,
-	s.SegmentName,
-	sp.FirstName,
-	sp.LastName,
-	p.ProductName,
-	count(*) as TotalProductSales,
-	sum(case when sli.PromotionID = 0 then 0 else 1 end) as TotalPromotionalSales
+select
+    year(so.SalesOrderDate) as SalesYear,
+    c.CountryName,
+    s.SegmentName,
+    sp.FirstName,
+    sp.LastName,
+    p.ProductName,
+    count(*) as TotalProductSales,
+    sum(case when sli.PromotionID = 0 then 0 else 1 end) as TotalPromotionalSales
 from SalesOrderLineItem sli
-	inner join Product p on p.ProductID = sli.ProductID
-	inner join SalesOrder so on so.SalesOrderID = sli.SalesOrderID
-	inner join SalesRegion sr on sr.SalesRegionID = so.SalesRegionID
-	inner join SalesPerson sp on sp.SalesPersonID = sr.SalesPersonID
-	inner join Region r on r.RegionID = sr.RegionID
-	inner join Segment s on s.SegmentID = r.SegmentID
-	inner join Country c on c.CountryID = r.CountryID
+    inner join Product p on p.ProductID = sli.ProductID
+    inner join SalesOrder so on so.SalesOrderID = sli.SalesOrderID
+    inner join SalesRegion sr on sr.SalesRegionID = so.SalesRegionID
+    inner join SalesPerson sp on sp.SalesPersonID = sr.SalesPersonID
+    inner join Region r on r.RegionID = sr.RegionID
+    inner join Segment s on s.SegmentID = r.SegmentID
+    inner join Country c on c.CountryID = r.CountryID
 where year(so.SalesOrderDate) > 2012
 group by
-	year(so.SalesOrderDate),
-	c.CountryName,
-	s.SegmentName,
-	sp.FirstName,
-	sp.LastName,
-	p.ProductName
+    year(so.SalesOrderDate),
+    c.CountryName,
+    s.SegmentName,
+    sp.FirstName,
+    sp.LastName,
+    p.ProductName
 ;
+go
 
 -- B1A (3 marks): What are the most expensive operations in this query execution plan? Include the relative cost of each operation you identify.
 
 -- B1B (4 marks): What is a clustered index scan? Why can this be a problem for performance? When would it not be a major concern?
 
 -- B1C (5 marks): Design an index to remove the clustered index scan on SalesOrderLineItem. Include the t-sql you used to create the index.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -- Remove clustered index scan and add nonclustered index scan on column IDs
--- 12 second query time
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 exec sp_helpindex 'SalesOrderLineItem';
 go
@@ -441,7 +469,7 @@ on SalesOrderLineItem
 go
 
 -- Update nonclustered index scan on column IDs required by query
--- 12 second query time
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 exec sp_helpindex 'SalesOrderLineItem';
 go
@@ -455,7 +483,7 @@ on SalesOrderLineItem
 go
 
 -- Remove nonclustered index scan and re-add clustered index scan
--- 12 second query time
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 exec sp_helpindex 'SalesOrderLineItem';
 go
@@ -530,6 +558,7 @@ exec sp_helpindex 'SalesOrderLineItem';
 go
 
 -- Drop index and create a new execution plan
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 drop index if exists idx_promotions on SalesOrderLineItem;
 go
