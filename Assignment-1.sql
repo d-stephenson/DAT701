@@ -591,12 +591,13 @@ go
 
 select *
 from (
-    select dense_rank() over (partition by SalesMonth order by sum(SalePrice) desc) as salesmonth_rank,
+    select
            SalesMonth,
            c.CountryName,
            s.SegmentName,
            sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
-           sum(SalePrice) as TotalMonthlySales
+           sum(SalePrice) as TotalMonthlySales,
+           dense_rank() over (partition by SalesMonth order by sum(SalePrice) desc) as salesmonth_rank
     from Region r
          inner join Country c on c.CountryID = r.CountryID
          inner join Segment s on s.SegmentID = r.SegmentID
@@ -604,13 +605,15 @@ from (
          inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
          inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
     where
-        SalesMonth >= '2016-01-01'
+         SalesMonth >= '2016-01-01'
     group by
          SalesMonth,
          c.CountryName,
          s.SegmentName) ranks
-where salesmonth_rank = 1
-order by SalesMonth desc;
+where
+    salesmonth_rank = 1
+order by
+    SalesMonth desc;
 go
 
 -- Section C - Query Refactoring (a total of 35 marks)
