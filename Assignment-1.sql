@@ -693,7 +693,8 @@ from (
 		so.SalesPersonID,
 		so.SalesMonth
 ) basic_metrics on basic_metrics.SalesOrderID = margin_calculation.SalesOrderID
-where SalesOrderDate > '2016-01-01'
+where SalesOrderDate > '2016-01-01';
+go
 
 -- Question C1: 10 marks
 -- Review the query execution plan and clearly describe why this query will not scale well.
