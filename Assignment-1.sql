@@ -571,19 +571,25 @@ drop index if exists idx_promotions on SalesOrderLineItem;
 go
 
 create nonclustered index IX_PromotionsGrouped
-on SalesOrderLineItem
-    (PromotionID, SalesOrderID, SalePrice);
+    on SalesOrderLineItem
+        (PromotionID, SalesOrderID, SalePrice);
 go
 
 drop index if exists IX_PromotionsGrouped on SalesOrderLineItem;
 go
 
 create nonclustered index IX_PromotionsGrouped_2
-on SalesOrderLineItem
-    (PromotionID, SalesOrderID, SalePrice, UnitsSold);
+    on SalesOrderLineItem
+        (PromotionID, SalesOrderID, SalePrice, UnitsSold);
 go
 
 drop index if exists IX_PromotionsGrouped_2 on SalesOrderLineItem;
+go
+
+create nonclustered index IX_PromotionsGrouped_2
+    on SalesOrderLineItem
+        (PromotionID, SalesOrderID, SalePrice, UnitsSold)
+    with (data_compression = row);
 go
 
 -- B2C (5 marks)
