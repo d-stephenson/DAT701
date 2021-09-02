@@ -719,6 +719,73 @@ go
 -- Run both queries together and include a screenshot that shows the relative costs of both queries. Include a screenshot of the execution plan of your query after all changes have been applied.
 -- (5 marks) 
 
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-- JUNK CODE
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+select *
+from (
+    select dense_rank() over (partition by SalesMonth order by sum(SalePrice) desc) as salesmonth_rank,
+           SalesMonth,
+           c.CountryName,
+           s.SegmentName,
+           sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
+           sum(SalePrice) as TotalMonthlySales--,
+           --dense_rank() over (partition by c.CountryName order by sum(SalePrice) desc) as country_rank,
+           --dense_rank() over (partition by s.SegmentName order by sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) desc) as segment_rank
+    from Region r
+         inner join Country c on c.CountryID = r.CountryID
+         inner join Segment s on s.SegmentID = r.SegmentID
+         inner join SalesRegion sr on sr.RegionID = r.RegionID
+         inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+         inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+    where
+        SalesMonth >= '2016-01-01'
+    group by
+         SalesMonth,
+         c.CountryName,
+         s.SegmentName) ranks
+where salesmonth_rank = 1
+    and country_rank = 1
+    or segment_rank = 1
+order by
+    SalesMonth desc;
+
+
+    with monthly_sales_info as (
+    select
+        sales_info.SalesMonth,
+        c.CountryName,
+        s.SegmentName,
+        sales_info.PromotionRate,
+        sales_info.TotalMonthlySales
+    from Region r
+        inner join Country c on c.CountryID = r.CountryID
+        inner join Segment s on s.SegmentID = r.SegmentID
+        inner join SalesRegion sr on sr.RegionID = r.RegionID
+        left join (
+            select
+                so.SalesRegionID,
+                so.SalesMonth,
+                sum(case when sli.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
+                sum(SalePrice) as TotalMonthlySales
+            from SalesOrder so
+                inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+            group by
+                so.SalesRegionID,
+                so.SalesMonth
+        ) sales_info on sales_info.SalesRegionID = sr.SalesRegionID
+)
+select *
+from monthly_sales_info
+where SalesMonth >= '2016-01-01'
+order by
+    SalesMonth desc,
+    monthly_sales_info.TotalMonthlySales desc;
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
