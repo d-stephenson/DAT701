@@ -154,33 +154,29 @@ go
 -- Include your t-sql and a screenshot of your visualisations below.
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as  
+with kpi_cte(SalesYear, SalesRepName, TotalMonthlyKPI) as  
     (
     select
         SalesYear,
-        CountryName,
-        SegmentName,
+        concat(FirstName, ' ', LastName) as SalesRepName,
         round(sum(KPI) / 12, 2) as TotalMonthlyKPI
     from SalesPerson sp
         inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-        inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-        inner join Region r on sr.RegionID = r.RegionID
-        inner join Segment s on r.SegmentID = s.SegmentID
-        inner join Country c on r.CountryID = c.CountryID
     group by
         SalesYear,
-        CountryName,
-        SegmentName
+        concat(FirstName, ' ', LastName)
     ),
-    performance_cte(OrderYear, OrderMonth, CountryName, SegmentName, TotalSalesPrice) as  
+    performance_cte(OrderYear, OrderMonth, SalesRepName, CountryName, SegmentName, TotalSalesPrice) as  
     (
     select
         year(SalesOrderDate) as OrderYear,
-        left(datename(month, SalesOrderDate), 3) as OrderMonth,
+        month(SalesOrderDate) as OrderMonth,
+        concat(FirstName, ' ', LastName) as SalesRepName,
         CountryName,
         SegmentName,
         sum(SalePrice) as TotalSalesPrice
-    from SalesRegion sr
+    from SalesPerson sp
+        inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
         inner join Region r on sr.RegionID = r.RegionID
         inner join Segment s on r.SegmentID = s.SegmentID
         inner join Country c on r.CountryID = c.CountryID
@@ -188,31 +184,35 @@ with salesprice_cte(SalesYear, CountryName, SegmentName, TotalMonthlyKPI) as
         inner join SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
     group by
         year(SalesOrderDate),
-        left(datename(month, SalesOrderDate), 3),
+        month(SalesOrderDate),
+        concat(FirstName, ' ', LastName),
         CountryName,
         SegmentName
     )
 select
     performance_cte.OrderYear,
     performance_cte.OrderMonth,
-    salesprice_cte.CountryName,
-    salesprice_cte.SegmentName,
+    performance_cte.SalesRepName,
+    performance_cte.CountryName,
+    performance_cte.SegmentName,
     TotalMonthlyKPI,
     TotalSalesPrice,
     round(sum((TotalSalesPrice / TotalMonthlyKPI) * 100), 2) as AnnualPerformance
-from salesprice_cte
-    inner join performance_cte on salesprice_cte.SalesYear = performance_cte.OrderYear
-        and salesprice_cte.CountryName = performance_cte.CountryName
-        and salesprice_cte.SegmentName = performance_cte.SegmentName
+from kpi_cte
+    inner join performance_cte on kpi_cte.SalesYear = performance_cte.OrderYear
+        and kpi_cte.SalesRepName = performance_cte.SalesRepName
 group by
     performance_cte.OrderYear,
     performance_cte.OrderMonth,
-    salesprice_cte.CountryName,
-    salesprice_cte.SegmentName,
+    performance_cte.SalesRepName,
+    performance_cte.CountryName,
+    performance_cte.SegmentName,
     TotalMonthlyKPI,
     TotalSalesPrice
 order by
-    OrderYear;
+    OrderYear desc,
+    OrderMonth desc,
+    SalesRepName;
 go
 
 -- 3B: What general conclusions can you draw from this visualisation? Justify your reasoning. (4 marks)
@@ -471,8 +471,8 @@ select top 10 * from SalesOrderLineItem;
 go
 
 create nonclustered index IX_SalesOrderLineItem
-on SalesOrderLineItem
-    (SalesOrderLineItemID asc, SalesOrderID, PromotionID, ProductID);
+    on SalesOrderLineItem
+        (SalesOrderLineItemID asc, SalesOrderID, PromotionID, ProductID);
 go
 
 -- Update nonclustered index scan on column IDs required by query
@@ -485,8 +485,8 @@ drop index if exists IX_SalesOrderLineItem on SalesOrderLineItem;
 go
 
 create nonclustered index IX_SalesOrderLineItem
-on SalesOrderLineItem
-    (PromotionID, ProductID);
+    on SalesOrderLineItem
+        (PromotionID, ProductID);
 go
 
 -- Remove nonclustered index scan and re-add clustered index scan
@@ -499,8 +499,8 @@ drop index if exists IX_SalesOrderLineItem on SalesOrderLineItem;
 go
 
 create clustered index PK__SalesOrd__DAA33720861CAF46
-on SalesOrderLineItem
-    (SalesOrderLineItemID);
+    on SalesOrderLineItem
+        (SalesOrderLineItemID);
 go
 
 -- B1D (2 marks): After creating your index, review the execution plan again. Did this index substantially reduce the relative execution cost of querying data from SalesOrderLineItems? 
