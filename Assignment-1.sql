@@ -63,6 +63,7 @@ go
 
 select
     SalesYear,
+    concat(FirstName, ' ', LastName) as SalesRepName,
     CountryName,
     SegmentName,
     sum(KPI) as TotalYearlyKPI
@@ -74,6 +75,7 @@ from SalesPerson sp
     inner join Country c on r.CountryID = c.CountryID
 group by
     SalesYear,
+    concat(FirstName, ' ', LastName),
     CountryName,
     SegmentName;
 go
