@@ -84,10 +84,12 @@ go
 -- Once you have calculated this KPI, calculate the yearly performance against the KPI (i.e. if the KPI for Mexico, Midmarket is $100,000 and the total sales was $110,000, then the yearly performance would be 110%). Include your t-sql below.
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as  
+
+with kpi_cte(SalesYear, SalesRepName, CountryName, SegmentName, TotalYearlyKPI) as  
     (
     select
         SalesYear,
+        concat(FirstName, ' ', LastName) as SalesRepName,
         CountryName,
         SegmentName,
         sum(KPI) as TotalYearlyKPI
@@ -99,6 +101,7 @@ with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as
         inner join Country c on r.CountryID = c.CountryID
     group by
         SalesYear,
+        concat(FirstName, ' ', LastName),
         CountryName,
         SegmentName
     ),
@@ -121,20 +124,22 @@ with salesprice_cte(SalesYear, CountryName, SegmentName, TotalYearlyKPI) as
         SegmentName
     )
 select
-    salesprice_cte.SalesYear,
-    salesprice_cte.CountryName,
-    salesprice_cte.SegmentName,
+    kpi_cte.SalesYear,
+    kpi_cte.SalesRepName,
+    kpi_cte.CountryName,
+    kpi_cte.SegmentName,
     TotalYearlyKPI,
     TotalSalesPrice,
     round(sum((TotalSalesPrice / TotalYearlyKPI) * 100), 2) as AnnualPerformance
-from salesprice_cte
-    inner join performance_cte on salesprice_cte.SalesYear = performance_cte.SalesYear
-        and salesprice_cte.CountryName = performance_cte.CountryName
-        and salesprice_cte.SegmentName = performance_cte.SegmentName
+from kpi_cte
+    inner join performance_cte on kpi_cte.SalesYear = performance_cte.SalesYear
+        and kpi_cte.CountryName = performance_cte.CountryName
+        and kpi_cte.SegmentName = performance_cte.SegmentName
 group by
-    salesprice_cte.SalesYear,
-    salesprice_cte.CountryName,
-    salesprice_cte.SegmentName,
+    kpi_cte.SalesYear,
+    kpi_cte.SalesRepName,
+    kpi_cte.CountryName,
+    kpi_cte.SegmentName,
     TotalYearlyKPI,
     TotalSalesPrice
 order by
