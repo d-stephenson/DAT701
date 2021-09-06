@@ -197,7 +197,7 @@ select
     performance_cte.SegmentName,
     TotalMonthlyKPI,
     TotalSalesPrice,
-    round(sum((TotalSalesPrice / TotalMonthlyKPI) * 100), 2) as AnnualPerformance
+    round(sum((TotalSalesPrice / TotalMonthlyKPI) * 100), 2) as Performance
 from kpi_cte
     inner join performance_cte on kpi_cte.SalesYear = performance_cte.OrderYear
         and kpi_cte.SalesRepName = performance_cte.SalesRepName
