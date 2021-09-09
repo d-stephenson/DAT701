@@ -717,6 +717,8 @@ go
 -- Question C2: 10 marks
 -- Rewrite this query so that it is scalable. Include your t-sql code below.
 
+-- TEST ONE
+
 -- Tested the query in one single select statement which improves performance at the expense
 -- of scalability
 
@@ -749,6 +751,56 @@ go
 
 -- Query Time 10 secs
 
+-- TEST TWO
+
+-- Separating calculation to improve scalability = 10 secs like the select query
+-- 13 seconds when on the two round calculations were split in the calcs_cte
+-- Used sargable for the dates doing between 1st and last day of the year no improvement in query performance
+-- tried dates in this format - was a second slower at 11 secs [> '2016-01-01' and SalesOrderDate < '2016-12-31']
+-- removed unnecessary joins from sales_cte improved time to 8 seconds
+
+
+with sales_cte as
+    (
+    select
+        so.SalesOrderDate,
+        so.SalesOrderNumber,
+        so.SalesPersonID,
+        so.SalesOrderID
+    from SalesOrder so
+    where SalesOrderDate between '2016-01-01' and '2016-12-31'
+    group by
+    so.SalesOrderID,
+    so.SalesOrderNumber,
+    so.SalesOrderDate,
+    so.SalesPersonID
+    ),
+    calcs_cte as
+    (
+    select
+        so.SalesOrderID,
+        sum(sli.SalePrice) as TotalSalesPrice,
+        sum(pc.ManufacturingPrice * sli.UnitsSold) as TotalCost,
+        sum(pc.RRP * sli.UnitsSold) as TotalRRP,
+        count(distinct sli.ProductID) as UniqueItems,
+        sum(UnitsSold) as TotalItems,
+        round(case
+            when sum(SalePrice) = 0 then 0
+            else sum(SalePrice - (pc.ManufacturingPrice * sli.UnitsSold)) / sum(SalePrice)
+            end, 2) as Margin,
+        round(sum((pc.RRP * sli.UnitsSold) - SalePrice) / sum(pc.RRP * sli.UnitsSold), 2) as PercentageDiscount
+    from SalesOrder so
+        inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+        inner join ProductCost pc on pc.ProductID = sli.ProductID
+    where SalesOrderDate between '2016-01-01' and '2016-12-31'
+    group by
+        so.SalesOrderID
+    )
+select *
+from sales_cte
+    inner join calcs_cte on sales_cte.SalesOrderID = calcs_cte.SalesOrderID
+order by sales_cte.SalesOrderID;
+go
 
 -- Question C3: 15 marks
 -- Run both the original query and your version of the query. Review the execution plans of both queries. Make any additional changes that will improve the performance of this query. 
