@@ -714,8 +714,6 @@ go
 -- Question C1: 10 marks
 -- Review the query execution plan and clearly describe why this query will not scale well.
 
-
-
 -- Question C2: 10 marks
 -- Rewrite this query so that it is scalable. Include your t-sql code below.
 
