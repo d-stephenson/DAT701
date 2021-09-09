@@ -743,12 +743,11 @@ group by
     so.SalesOrderID,
     so.SalesOrderNumber,
     so.SalesOrderDate,
-    so.SalesPersonID,
-    so.SalesMonth
+    so.SalesPersonID
 order by SalesOrderID;
 go
 
--- Query Time 11 secs
+-- Query Time 10 secs
 
 
 -- Question C3: 15 marks
