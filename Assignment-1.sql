@@ -709,11 +709,49 @@ from (
 where SalesOrderDate > '2016-01-01';
 go
 
+-- Query Time 1:16
+
 -- Question C1: 10 marks
 -- Review the query execution plan and clearly describe why this query will not scale well.
 
+
+
 -- Question C2: 10 marks
 -- Rewrite this query so that it is scalable. Include your t-sql code below.
+
+-- Tested the query in one single select statement which improves performance at the expense
+-- of scalability
+
+select
+    so.SalesOrderDate,
+    so.SalesOrderNumber,
+    so.SalesPersonID,
+    so.SalesOrderID,
+    sum(sli.SalePrice) as TotalSalesPrice,
+    sum(pc.ManufacturingPrice * sli.UnitsSold) as TotalCost,
+    sum(pc.RRP * sli.UnitsSold) as TotalRRP,
+    count(distinct sli.ProductID) as UniqueItems,
+    sum(UnitsSold) as TotalItems,---
+    round(case
+        when sum(SalePrice) = 0 then 0
+        else sum(SalePrice - (pc.ManufacturingPrice * sli.UnitsSold)) / sum(SalePrice)
+        end, 2) as Margin,
+    round(sum((pc.RRP * sli.UnitsSold) - SalePrice) / sum(pc.RRP * sli.UnitsSold), 2) as PercentageDiscount
+from SalesOrder so
+    inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+    inner join ProductCost pc on pc.ProductID = sli.ProductID
+where SalesOrderDate > '2016-01-01'
+group by
+    so.SalesOrderID,
+    so.SalesOrderNumber,
+    so.SalesOrderDate,
+    so.SalesPersonID,
+    so.SalesMonth
+order by SalesOrderID;
+go
+
+-- Query Time 11 secs
+
 
 -- Question C3: 15 marks
 -- Run both the original query and your version of the query. Review the execution plans of both queries. Make any additional changes that will improve the performance of this query. 
@@ -724,6 +762,53 @@ go
 
 -- Run both queries together and include a screenshot that shows the relative costs of both queries. Include a screenshot of the execution plan of your query after all changes have been applied.
 -- (5 marks) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
