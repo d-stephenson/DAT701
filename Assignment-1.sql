@@ -729,7 +729,7 @@ select
     sum(pc.ManufacturingPrice * sli.UnitsSold) as TotalCost,
     sum(pc.RRP * sli.UnitsSold) as TotalRRP,
     count(distinct sli.ProductID) as UniqueItems,
-    sum(UnitsSold) as TotalItems,---
+    sum(UnitsSold) as TotalItems,
     round(case
         when sum(SalePrice) = 0 then 0
         else sum(SalePrice - (pc.ManufacturingPrice * sli.UnitsSold)) / sum(SalePrice)
