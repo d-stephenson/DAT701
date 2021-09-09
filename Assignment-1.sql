@@ -758,7 +758,7 @@ go
 -- Used sargable for the dates doing between 1st and last day of the year no improvement in query performance
 -- tried dates in this format - was a second slower at 11 secs [> '2016-01-01' and SalesOrderDate < '2016-12-31']
 -- removed unnecessary joins from sales_cte improved time to 8 seconds
-
+-- removed the * in the final select statement and replaced with columns specified and reduced query to 7 seconds
 
 with sales_cte as
     (
@@ -796,7 +796,18 @@ with sales_cte as
     group by
         so.SalesOrderID
     )
-select *
+select
+    sales_cte.SalesOrderDate,
+    sales_cte.SalesOrderNumber,
+    sales_cte.SalesPersonID,
+    sales_cte.SalesOrderID,
+    calcs_cte.TotalSalesPrice,
+    calcs_cte.TotalCost,
+    calcs_cte.TotalRRP,
+    calcs_cte.UniqueItems,
+    calcs_cte.TotalItems,
+    calcs_cte.Margin,
+    calcs_cte.PercentageDiscount
 from sales_cte
     inner join calcs_cte on sales_cte.SalesOrderID = calcs_cte.SalesOrderID
 order by sales_cte.SalesOrderID;
