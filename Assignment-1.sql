@@ -826,7 +826,19 @@ go
 
 create nonclustered index IX_sales_cte
     on SalesOrder
-        (SalesOrderDate, SalesOrderNumber, SalesPersonID) include (SalesOrderID);
+        (SalesOrderDate, SalesOrderNumber, SalesPersonID) -- include (SalesOrderID)
+    with (data_compression = row);
+go
+
+-- Test index FK on SOLI SalesOrderID, unsuccessful
+
+drop index if exists IX_solisoid_cte on SalesOrder;
+go
+
+create nonclustered index IX_solisoid_cte
+    on SalesOrderLineItem
+        (SalesOrderID)
+    with (data_compression = row);
 go
 
 -- This increase query time by 1 second, no longer using index seek as a result increasing time
@@ -834,7 +846,7 @@ go
 drop index if exists IX_sales_cte on SalesOrder;
 go
 
--- Removing SalesOrderID improved the query to 7 seconds (this is already available in the clustered index)
+-- Removing SalesOrderID improved the query to 7 seconds, (this is already available in the clustered index)
 
 create nonclustered index IX_sales_cte
     on SalesOrder
@@ -850,7 +862,8 @@ go
 
 create nonclustered index IX_calcs_cte_1
     on SalesOrderLineItem
-        (SalesOrderID, SalePrice, UnitsSold) include (ProductID);
+        (SalesOrderID, UnitsSold, SalePrice) include (ProductID)
+    with (data_compression = row);
 go
 
 -- This increased the query time to 9 seconds
@@ -868,7 +881,7 @@ go
 
 create nonclustered index IX_cte_ProductCost
     on ProductCost
-        (ProductID, ManufacturingPrice)
+        (ManufacturingPrice)
     with (data_compression = row);
 go
 
