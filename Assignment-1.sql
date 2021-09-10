@@ -813,6 +813,34 @@ from sales_cte
 order by sales_cte.SalesOrderID;
 go
 
+-- Testing indexes
+
+exec sp_helpindex 'SalesOrderLineItem';
+go
+
+exec sp_helpindex 'SalesOrder';
+go
+
+exec sp_helpindex 'ProductCost';
+go
+
+create nonclustered index IX_sales_cte
+    on SalesOrder
+        (SalesOrderDate, SalesOrderNumber, SalesPersonID, SalesOrderID);
+go
+
+-- This increase query time by 1 second, no longer using index seek as a result increasing time
+
+drop index if exists IX_sales_cte on SalesOrder;
+go
+
+-- Removing SalesOrderID improved the query to 7 seconds, this is already available in the clustered index
+
+create nonclustered index IX_sales_cte
+    on SalesOrder
+        (SalesOrderDate, SalesOrderNumber, SalesPersonID);
+go
+
 -- Question C3: 15 marks
 -- Run both the original query and your version of the query. Review the execution plans of both queries. Make any additional changes that will improve the performance of this query. 
 
