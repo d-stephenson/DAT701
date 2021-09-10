@@ -815,10 +815,10 @@ go
 
 -- Testing indexes
 
-exec sp_helpindex 'SalesOrderLineItem';
+exec sp_helpindex 'SalesOrder';
 go
 
-exec sp_helpindex 'SalesOrder';
+exec sp_helpindex 'SalesOrderLineItem';
 go
 
 exec sp_helpindex 'ProductCost';
@@ -826,7 +826,7 @@ go
 
 create nonclustered index IX_sales_cte
     on SalesOrder
-        (SalesOrderDate, SalesOrderNumber, SalesPersonID, SalesOrderID);
+        (SalesOrderDate, SalesOrderNumber, SalesPersonID) include (SalesOrderID);
 go
 
 -- This increase query time by 1 second, no longer using index seek as a result increasing time
@@ -834,11 +834,45 @@ go
 drop index if exists IX_sales_cte on SalesOrder;
 go
 
--- Removing SalesOrderID improved the query to 7 seconds, this is already available in the clustered index
+-- Removing SalesOrderID improved the query to 7 seconds (this is already available in the clustered index)
 
 create nonclustered index IX_sales_cte
     on SalesOrder
         (SalesOrderDate, SalesOrderNumber, SalesPersonID);
+go
+
+-- Updates to index on SLI to include ProductID
+
+drop index if exists IX_calcs_cte_1 on SalesOrderLineItem;
+go
+
+-- Adding include ProductId reduced time by 1 second to 6 seconds
+
+create nonclustered index IX_calcs_cte_1
+    on SalesOrderLineItem
+        (SalesOrderID, SalePrice, UnitsSold) include (ProductID);
+go
+
+-- This increased the query time to 9 seconds
+
+drop index if exists IX_calcs_cte_2 on SalesOrderLineItem;
+go
+
+create nonclustered index IX_calcs_cte_2
+    on SalesOrderLineItem
+        (SalePrice, UnitsSold) -- include (SalesOrderID)
+    with (data_compression = row);
+go
+
+-- Create index on Product table
+
+create nonclustered index IX_cte_ProductCost
+    on ProductCost
+        (ProductID, ManufacturingPrice)
+    with (data_compression = row);
+go
+
+drop index if exists IX_cte_ProductCost on ProductCost;
 go
 
 -- Question C3: 15 marks
