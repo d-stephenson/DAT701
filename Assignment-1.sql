@@ -813,6 +813,71 @@ from sales_cte
 order by sales_cte.SalesOrderID;
 go
 
+-- TEST THREE
+
+-- The following query adapts the query above but takes the calculations out of the cte and uses the existing calculations to generate the information - reduced the query time to 5 secs
+
+with sales_cte as
+    (
+    select
+        convert(date, so.SalesOrderDate) as SalesOrderDate,
+        so.SalesOrderNumber,
+        so.SalesPersonID,
+        so.SalesOrderID
+    from SalesOrder so
+    where SalesOrderDate between '2016-01-01' and '2016-12-31'
+    group by
+        so.SalesOrderID,
+        so.SalesOrderNumber,
+        so.SalesOrderDate,
+        so.SalesPersonID
+    ),
+    calcs_cte as
+    (
+    select
+        so.SalesOrderID,
+        sum(sli.SalePrice) as TotalSalesPrice,
+        sum(pc.ManufacturingPrice * sli.UnitsSold) as TotalCost,
+        sum(pc.RRP * sli.UnitsSold) as TotalRRP,
+        count(distinct sli.ProductID) as UniqueItems,
+        sum(UnitsSold) as TotalItems
+    from SalesOrder so
+        inner join SalesOrderLineItem sli on sli.SalesOrderID = so.SalesOrderID
+        inner join ProductCost pc on pc.ProductID = sli.ProductID
+    where SalesOrderDate between '2016-01-01' and '2016-12-31'
+    group by
+        so.SalesOrderID
+    )
+select
+    sales_cte.SalesOrderDate,
+    sales_cte.SalesOrderNumber,
+    sales_cte.SalesPersonID,
+    sales_cte.SalesOrderID,
+    calcs_cte.TotalSalesPrice,
+    calcs_cte.TotalCost,
+    calcs_cte.TotalRRP,
+    calcs_cte.UniqueItems,
+    calcs_cte.TotalItems,
+    round(case
+            when calcs_cte.TotalSalesPrice = 0 then 0
+            else (calcs_cte.TotalSalesPrice - calcs_cte.TotalRRP) / calcs_cte.TotalSalesPrice
+            end, 2) as Margin,
+    round(sum((calcs_cte.TotalRRP) - (calcs_cte.TotalSalesPrice)) / sum(calcs_cte.TotalRRP), 2) as PercentageDiscount
+from sales_cte
+    inner join calcs_cte on sales_cte.SalesOrderID = calcs_cte.SalesOrderID
+group by
+    sales_cte.SalesOrderDate,
+    sales_cte.SalesOrderNumber,
+    sales_cte.SalesPersonID,
+    sales_cte.SalesOrderID,
+    calcs_cte.TotalSalesPrice,
+    calcs_cte.TotalCost,
+    calcs_cte.TotalRRP,
+    calcs_cte.UniqueItems,
+    calcs_cte.TotalItems
+order by sales_cte.SalesOrderID;
+go
+
 -- Testing indexes
 
 exec sp_helpindex 'SalesOrder';
