@@ -861,9 +861,9 @@ select
     calcs_cte.TotalItems,
     round(case
             when calcs_cte.TotalSalesPrice = 0 then 0
-            else (calcs_cte.TotalSalesPrice - calcs_cte.TotalRRP) / calcs_cte.TotalSalesPrice
+            else (calcs_cte.TotalSalesPrice - calcs_cte.TotalCost) / calcs_cte.TotalSalesPrice
             end, 2) as Margin,
-    round(sum((calcs_cte.TotalRRP) - (calcs_cte.TotalSalesPrice)) / sum(calcs_cte.TotalRRP), 2) as PercentageDiscount
+    round((calcs_cte.TotalRRP - calcs_cte.TotalSalesPrice) / (calcs_cte.TotalRRP), 2) as PercentageDiscount
 from sales_cte
     inner join calcs_cte on sales_cte.SalesOrderID = calcs_cte.SalesOrderID
 group by
