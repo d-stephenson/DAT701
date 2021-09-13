@@ -815,7 +815,8 @@ go
 
 -- TEST THREE
 
--- The following query adapts the query above but takes the calculations out of the cte and uses the existing calculations to generate the information - reduced the query time to 5 secs
+-- The following query adapts the query above but takes the calculations out of the cte and uses the existing calculations 
+-- to generate the information - reduced the query time by 1 second to 5 secs
 
 with sales_cte as
     (
