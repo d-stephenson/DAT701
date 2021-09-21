@@ -444,8 +444,7 @@ group by
     s.SegmentName,
     sp.FirstName,
     sp.LastName,
-    p.ProductName
-;
+    p.ProductName;
 go
 
 -- B1A (3 marks): What are the most expensive operations in this query execution plan? Include the relative cost of each operation you identify.
@@ -716,11 +715,13 @@ go
 
 -- Question C2: 10 marks
 -- Rewrite this query so that it is scalable. Include your t-sql code below.
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -- TEST ONE
 
 -- Tested the query in one single select statement which improves performance at the expense
 -- of scalability
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 select
     so.SalesOrderDate,
@@ -755,10 +756,11 @@ go
 
 -- Separating calculation to improve scalability = 10 secs like the select query
 -- 13 seconds when on the two round calculations were split in the calcs_cte
--- Used sargable for the dates doing between 1st and last day of the year no improvement in query performance
+-- Used sargable for the dates using between 1st and last day of the year, no improvement in query performance
 -- tried dates in this format - was a second slower at 11 secs [> '2016-01-01' and SalesOrderDate < '2016-12-31']
 -- removed unnecessary joins from sales_cte improved time to 8 seconds
 -- removed the * in the final select statement and replaced with columns specified and reduced query to 7 seconds
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 with sales_cte as
     (
@@ -815,8 +817,9 @@ go
 
 -- TEST THREE
 
--- The following query adapts the query above but takes the calculations out of the cte and uses the existing calculations 
+-- The following query adapts the above query taking the calculations out of the cte and using the existing calculations 
 -- to generate the information - reduced the query time by 1 second to 5 secs
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 with sales_cte as
     (
@@ -880,6 +883,7 @@ order by sales_cte.SalesOrderID;
 go
 
 -- Testing indexes
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 exec sp_helpindex 'SalesOrder';
 go
@@ -897,6 +901,7 @@ create nonclustered index IX_sales_cte
 go
 
 -- Test index FK on SOLI SalesOrderID, unsuccessful
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 drop index if exists IX_solisoid_cte on SalesOrder;
 go
@@ -908,11 +913,13 @@ create nonclustered index IX_solisoid_cte
 go
 
 -- This increase query time by 1 second, no longer using index seek as a result increasing time
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 drop index if exists IX_sales_cte on SalesOrder;
 go
 
--- Removing SalesOrderID improved the query to 7 seconds, (this is already available in the clustered index)
+-- Removing SalesOrderID improved the query to 7 seconds (this is already available in the clustered index)
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 create nonclustered index IX_sales_cte
     on SalesOrder
@@ -920,11 +927,13 @@ create nonclustered index IX_sales_cte
 go
 
 -- Updates to index on SLI to include ProductID
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 drop index if exists IX_calcs_cte_1 on SalesOrderLineItem;
 go
 
 -- Adding include ProductId reduced time by 1 second to 6 seconds
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 create nonclustered index IX_calcs_cte_1
     on SalesOrderLineItem
@@ -933,6 +942,7 @@ create nonclustered index IX_calcs_cte_1
 go
 
 -- This increased the query time to 9 seconds
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 drop index if exists IX_calcs_cte_2 on SalesOrderLineItem;
 go
@@ -944,6 +954,7 @@ create nonclustered index IX_calcs_cte_2
 go
 
 -- Create index on Product table
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 create nonclustered index IX_cte_ProductCost
     on ProductCost
