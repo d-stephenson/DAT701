@@ -14,3 +14,8 @@ exec sp_columns SalesOrderLineItem
 exec sp_columns SalesPerson
 exec sp_columns SalesRegion
 exec sp_columns Segment
+
+create database staging_FinanceDW;
+create database production_FinanceDW;
+
+use staging_FinanceDW;
