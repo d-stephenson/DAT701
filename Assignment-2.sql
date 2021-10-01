@@ -16,6 +16,10 @@ exec sp_columns SalesRegion
 exec sp_columns Segment
 
 create database staging_FinanceDW;
+go
+
 create database production_FinanceDW;
+go
 
 use staging_FinanceDW;
+go
