@@ -148,7 +148,7 @@ begin
         Discount float(15)
     );
 
-    create table FactAggregatedValues;
+    create table FactAggregatedValues
     (
         factaggregatedvaluesKey int identity primary key,
         [dateKey] int not null, 
@@ -173,7 +173,8 @@ begin
     );
 end;
 go
-
+exec create_tables;
+go
 
 
 
