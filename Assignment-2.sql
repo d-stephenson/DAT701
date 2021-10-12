@@ -267,7 +267,7 @@ BEGIN
 
 /* Populate Your Dimension Table with values*/
     
-    INSERT INTO [dbo].[DimDate]
+    INSERT INTO DimDate
     SELECT
         
         CONVERT (char(8),@CurrentDate,112) as DateKey,
