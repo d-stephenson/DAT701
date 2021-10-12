@@ -39,7 +39,7 @@ create procedure create_tables
 as
 begin
         
-    drop table if exists Dimdate;
+    drop table if exists DimDate;
     drop table if exists DimProduct;
     drop table if exists DimPromotion;
     drop table if exists DimSalesLocation;
@@ -186,7 +186,7 @@ create procedure insert_into
 as
 begin
     
-    insert into DimDates
+    insert into DimDate
     values
     (
         DECLARE @StartDate DATETIME = '01/01/2010' --Starting value of Date Range
