@@ -92,41 +92,65 @@ begin
     
     create table DimProduct 
     (
-        product_key tinyint identity,
+        productKey tinyint identity primary key,
         ProductName varchar(24)
     );
 
     create table DimPromotion
     (
-        promotion_key smallint identity,
+        promotionKey smallint identity primary key,
         PromotionYear int
     );
 
     create table DimSalesLocation
     (
-        saleslocation_key smallint identity,
+        saleslocationKey smallint identity primary key,
         CountryName varchar(56),
         SegmentName varchar(48)
     );
 
     create table DimSalesPerson
     (
-        salesperson_key smallint identity,
+        salespersonKey smallint identity primary key,
         FirstName varchar(64),
         LastName varchar(64),
-        Gender
-        HireDate
-        DateOfBirth
-        DateOfLeave
-        DateOfSickLeave
+        Gender varchar(20),
+        HireDate date,
+        DateOfBirth date,
+        DateOfLeave date,
+        DateOfSickLeave date
+    );
+
+    create table FactOrder
+    (
+        factorderKey int identity primary key,
+        [dateKey] int not null, 
+        productKey tinyint not null,
+        promotionKey smallint not null,
+        saleslocationKey smallint not null,
+        salespersonKey smallint not null,
+        SalesOrderNumber varchar(48),
+        KPI float(15)
+    );
+
+    create table FactSales
+    (
+        factsalesKey int identity primary key,
+        [dateKey] int not null, 
+        productKey tinyint not null,
+        promotionKey smallint not null,
+        saleslocationKey smallint not null,
+        SalesOrderLineNumber varchar(10),
+        UnitsSold smallint,
+        SalePrice float(8),
+        ManufacturingPrice float(8),
+        RRP float(8),
+        Discount float(15)
     );
 
 
 
 
-
-    drop table if exists Di;
-    drop table if exists FactOrder;
     drop table if exists FactSales;
     drop table if exists FactAggregatedValues;
 
