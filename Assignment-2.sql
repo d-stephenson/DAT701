@@ -150,7 +150,7 @@ begin
 
     create table FactAggregatedValues;
     (
-        factsalesKey int identity primary key,
+        factaggregatedvaluesKey int identity primary key,
         [dateKey] int not null, 
         productKey tinyint not null,
         promotionKey smallint not null,
