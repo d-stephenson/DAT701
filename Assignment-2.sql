@@ -124,11 +124,11 @@ begin
     create table FactOrder
     (
         factorderKey int identity primary key,
-        [dateKey] int not null, 
-        productKey tinyint not null,
-        promotionKey smallint not null,
-        saleslocationKey smallint not null,
-        salespersonKey smallint not null,
+        [dateKey] int not null foreign key references DimDate([dateKey]), 
+        productKey tinyint foreign key references DimProduct(productKey),
+        promotionKey smallint foreign key references DimPromotion(promotionKey),
+        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
+        salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
         SalesOrderNumber varchar(48),
         KPI float(15)
     );
@@ -136,10 +136,10 @@ begin
     create table FactSales
     (
         factsalesKey int identity primary key,
-        [dateKey] int not null, 
-        productKey tinyint not null,
-        promotionKey smallint not null,
-        saleslocationKey smallint not null,
+        [dateKey] int not null foreign key references DimDate([dateKey]), 
+        productKey tinyint foreign key references DimProduct(productKey),
+        promotionKey smallint foreign key references DimPromotion(promotionKey),
+        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
         SalesOrderLineNumber varchar(10),
         UnitsSold smallint,
         SalePrice float(8),
@@ -151,11 +151,11 @@ begin
     create table FactAggregatedValues
     (
         factaggregatedvaluesKey int identity primary key,
-        [dateKey] int not null, 
-        productKey tinyint not null,
-        promotionKey smallint not null,
-        saleslocationKey smallint not null,
-        salespersonKey smallint not null,
+        [dateKey] int not null foreign key references DimDate([dateKey]), 
+        productKey tinyint foreign key references DimProduct(productKey),
+        promotionKey smallint foreign key references DimPromotion(promotionKey),
+        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
+        salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
         TotalSale float(8),
         GrossProfit float(8),
         TotalYearlyKPI float(15),
