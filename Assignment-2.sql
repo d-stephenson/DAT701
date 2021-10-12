@@ -173,6 +173,7 @@ begin
     );
 end;
 go
+
 exec create_tables;
 go
 
