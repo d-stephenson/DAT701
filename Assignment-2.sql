@@ -377,4 +377,3 @@ BEGIN
 
 -- exec create_tables;
 -- go
-    
