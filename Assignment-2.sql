@@ -148,11 +148,33 @@ begin
         Discount float(15)
     );
 
+    create table FactAggregatedValues;
+    (
+        factsalesKey int identity primary key,
+        [dateKey] int not null, 
+        productKey tinyint not null,
+        promotionKey smallint not null,
+        saleslocationKey smallint not null,
+        salespersonKey smallint not null,
+        TotalSale float(8),
+        GrossProfit float(8),
+        TotalYearlyKPI float(15),
+        AnnualPerformance float(15),
+        SalesRepRank int,
+        GrossProfitRank int,
+        TotalProductSales int,
+        TotalPromotionalSales int,
+        PromotionRate int,
+        TotalItems int,
+        Margin int,
+        PercentageDiscount int,
+        TotalRRP float(8),
+        UniqueItems int
+    );
+end;
+go
 
 
-
-    drop table if exists FactSales;
-    drop table if exists FactAggregatedValues;
 
 
 
