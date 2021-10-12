@@ -30,7 +30,7 @@ go
 use staging_FinanceDW;
 go
 
--- DDL Making tables and indexes and checks
+-- DDL Create Tables
 
 drop procedure if exists create_tables
 go
