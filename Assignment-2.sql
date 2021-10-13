@@ -272,17 +272,49 @@ begin
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
             FirstName,
-            LastName varchar(64),
-            Gender varchar(20),
-            HireDate date,
-            DateOfBirth date,
-            DateOfLeave date,
-            DateOfSickLeave date
+            LastName,
+            Gender,
+            HireDate,
+            DateOfBirth,
+            DateOfLeave,
+            DateOfSickLeave
         )
     select 
-            CountryName,
-            SegmentName
+            FirstName,
+            LastName,
+            Gender,
+            HireDate,
+            DateOfBirth,
+            DateOfLeave,
+            DateOfSickLeave
     from FinanceDB.dbo.SalesPerson
+
+        insert into staging_FinanceDW.dbo.FactOrder
+        (
+            [dateKey],
+            productKey,
+            promotionKey,
+            saleslocationKey,
+            salespersonKey,
+            SalesOrderNumber,
+            KPI 
+        )
+    select 
+            [dateKey],
+            productKey,
+            promotionKey,
+            saleslocationKey,
+            salespersonKey,
+            SalesOrderNumber,
+            KPI 
+    from FinanceDW.dbo.FactOrder fo
+        inner join FinanceDW.dbo.DimDate dd on fo.[dateKey] = dd.[dateKey]
+        inner join FinanceDW.dbo.DimProduct dp on fo.productKey = dp.productKey
+        inner join FinanceDW.dbo.DimPromotion dr on fo.promotionKey = dr.promotionKey
+        inner join FinanceDW.dbo.DimSalesLocation dsl on fo.saleslocationKey = dsl.saleslocationKey
+        inner join FinanceDW.dbo.DimSalesPerson dsp on fo.salespersonKey = dsp.salespersonKey
+        
+
 
 end;
 go
