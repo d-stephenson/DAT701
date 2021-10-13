@@ -252,6 +252,38 @@ begin
     select ProductName
     from FinanceDB.dbo.Product;
 
+    insert into staging_FinanceDW.dbo.DimPromotion
+        (PromotionYear)
+    select PromotionYear
+    from FinanceDB.dbo.Promotion;
+
+    insert into staging_FinanceDW.dbo.DimSalesLocation
+        (
+            CountryName,
+            SegmentName
+        )
+    select 
+            CountryName,
+            SegmentName
+    from FinanceDB.dbo.Country c
+        inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
+        inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
+
+    insert into staging_FinanceDW.dbo.DimSalesPerson
+        (
+            FirstName,
+            LastName varchar(64),
+            Gender varchar(20),
+            HireDate date,
+            DateOfBirth date,
+            DateOfLeave date,
+            DateOfSickLeave date
+        )
+    select 
+            CountryName,
+            SegmentName
+    from FinanceDB.dbo.SalesPerson
+
 end;
 go
 
