@@ -247,13 +247,18 @@ create procedure insert_into
 as
 begin
 
-    INSERT /*+ APPEND */ INTO COSTS
-    (TIME_ID, PROD_ID, UNIT_COST, UNIT_PRICE)
-    SELECT TIME_ID, PROD_ID, AVG(UNIT_COST), AVG(amount_sold/quantity_sold)
-    FROM sales_transactions_ext GROUP BY time_id, prod_id;
+    insert into staging_FinanceDW.dbo.DimProduct
+        (ProductName)
+    select ProductName
+    from FinanceDB.dbo.Product;
 
 end;
 go
 
 exec insert_into;
 go
+
+-- INSERT /*+ APPEND */ INTO COSTS
+-- (TIME_ID, PROD_ID, UNIT_COST, UNIT_PRICE)
+-- SELECT TIME_ID, PROD_ID, AVG(UNIT_COST), AVG(amount_sold/quantity_sold)
+-- FROM sales_transactions_ext GROUP BY time_id, prod_id;
