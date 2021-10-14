@@ -370,6 +370,7 @@ begin
             SalePrice,
             ManufacturingPrice,
             RRP,
+            PromotionYear,
             Discount
         )
     select
@@ -382,20 +383,17 @@ begin
         SalePrice,
         ManufacturingPrice,
         RRP,
+        PromotionYear,
         Discount
     from SalesRegion sr on 
         inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
         inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        ) fo2
-    on fo1.SalesPersonID = fo2.SalesPersonID
-        and SalesYear = year(SalesOrderDate)
+        inner join Promotion pm on sli.PromotionID = pm.PromotionID
     order by
         SalesOrderDate desc,
-        fo1.SalesPersonID,
+        SalesOrderLineNumber,
         RegionID,
         ProductID;      
-
-
 
 end;
 go
