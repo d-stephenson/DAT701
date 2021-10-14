@@ -374,7 +374,7 @@ begin
             Discount
         )
    select
-        SalesOrderDate,
+        convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
         pm.ProductID,
         pm.PromotionID,
         RegionID,
