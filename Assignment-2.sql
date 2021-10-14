@@ -125,7 +125,6 @@ begin
         SalePrice float(8),
         ManufacturingPrice float(8),
         RRP float(8),
-        PromotionYear int, 
         Discount float(15)
     );
 
@@ -370,7 +369,6 @@ begin
             SalePrice,
             ManufacturingPrice,
             RRP,
-            PromotionYear,
             Discount
         )
    select
@@ -383,13 +381,11 @@ begin
         SalePrice,
         ManufacturingPrice,
         RRP,
-        PromotionYear,
         Discount
     from SalesRegion sr
         inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
         inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join Promotion pm on sli.PromotionID = pm.PromotionID
-        inner join Product pr on pm.ProductID = pr.ProductID
+        inner join Product pr on sli.ProductID = pr.ProductID
         inner join ProductCost pc on pr.ProductID = pc.ProductID
     order by
         SalesOrderDate desc,
@@ -398,7 +394,7 @@ begin
         ProductID;  
    
     -- FactAggregatedValues
-    
+
 
 
 
