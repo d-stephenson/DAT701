@@ -247,6 +247,7 @@ create procedure insert_into
 as
 begin
 
+    -- DimProduct
     insert into staging_FinanceDW.dbo.DimProduct
         (ProductName)
     select ProductName
@@ -287,32 +288,46 @@ begin
             DateOfBirth,
             DateOfLeave,
             DateOfSickLeave
-    from FinanceDB.dbo.SalesPerson
+    from FinanceDB.dbo.SalesPerson;
 
-    -- insert into staging_FinanceDW.dbo.FactOrder
-    --     (
-    --         [dateKey],
-    --         productKey,
-    --         promotionKey,
-    --         saleslocationKey,
-    --         salespersonKey,
-    --         SalesOrderNumber,
-    --         KPI 
-    --     )
-    -- select 
-    --         [dateKey],
-    --         productKey,
-    --         promotionKey,
-    --         saleslocationKey,
-    --         salespersonKey,
-    --         SalesOrderNumber,
-    --         KPI 
-    -- from FinanceDW.dbo.FactOrder fo
-    --     inner join FinanceDW.dbo.DimDate dd on fo.[dateKey] = dd.[dateKey]
-    --     inner join FinanceDW.dbo.DimProduct dp on fo.productKey = dp.productKey
-    --     inner join FinanceDW.dbo.DimPromotion dr on fo.promotionKey = dr.promotionKey
-    --     inner join FinanceDW.dbo.DimSalesLocation dsl on fo.saleslocationKey = dsl.saleslocationKey
-    --     inner join FinanceDW.dbo.DimSalesPerson dsp on fo.salespersonKey = dsp.salespersonKey
+    with cte_fo1(SalesPersonID, KPI, SalesYear) as
+        (
+            select
+                sp.SalesPersonID,
+                KPI,
+                SalesYear
+            from SalesPerson sp
+                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        ),
+        cte_fo2(SalesPersonID, RegionID, PromotionID, ProductID, SalesOrderDate, SalesOrderNumber) as
+        (
+            select
+                sp.SalesPersonID,
+                RegionID,
+                PromotionID,
+                ProductID,
+                SalesOrderDate,
+                SalesOrderNumber
+            from SalesPerson sp
+                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        )
+    select
+        cte_fo1.SalesPersonID,
+        cte_fo1.KPI,
+        cte_fo1.SalesYear,
+        cte_fo2.RegionID,
+        cte_fo2.PromotionID,
+        cte_fo2.ProductID,
+        cte_fo2.SalesOrderDate,
+        cte_fo2.SalesOrderNumber
+    from cte_fo1
+        inner join cte_fo2 on cte_fo1.SalesPersonID = cte_fo2.SalesPersonID
+    where
+        cte_fo1.SalesYear = year(cte_fo2.SalesOrderDate);
+    go
+
 
 end;
 go
