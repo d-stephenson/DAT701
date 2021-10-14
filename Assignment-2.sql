@@ -308,7 +308,7 @@ begin
     from FinanceDB.dbo.SalesPerson;
 
     -- FactOrders
-    insert into staging_FinanceDW.dbo.DimSalesPerson
+    insert into staging_FinanceDW.dbo.FactOrder
         (
             salespersonKey,
             KPI,
@@ -357,7 +357,55 @@ begin
         RegionID,
         ProductID;
 
-        
+    -- FactSales
+    insert into staging_FinanceDW.dbo.FactSales
+        (
+            salespersonKey,
+            KPI,
+            saleslocationKey,
+            promotionKey,
+            productKey,
+            [dateKey],
+            SalesOrderNumber
+        )
+    select
+        fo1.SalesPersonID,
+        KPI,
+        RegionID,
+        PromotionID,
+        ProductID,
+        SalesOrderDate,
+        SalesOrderNumber
+    from
+        (
+            select
+                sp.SalesPersonID,
+                KPI,
+                SalesYear
+            from SalesPerson sp
+                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        ) fo1
+        inner join
+        (
+            select
+                sp.SalesPersonID,
+                RegionID,
+                PromotionID,
+                ProductID,
+                convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+                SalesOrderNumber
+            from SalesPerson sp
+                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        ) fo2
+    on fo1.SalesPersonID = fo2.SalesPersonID
+        and SalesYear = year(SalesOrderDate)
+    order by
+        SalesOrderDate desc,
+        fo1.SalesPersonID,
+        RegionID,
+        ProductID;      
 
 
 
