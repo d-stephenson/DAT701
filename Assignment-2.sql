@@ -397,6 +397,10 @@ begin
         RegionID,
         ProductID;  
    
+    -- FactAggregatedValues
+    
+
+
 
 end;
 go
