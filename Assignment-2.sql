@@ -249,25 +249,37 @@ begin
 
     -- DimProduct
     insert into staging_FinanceDW.dbo.DimProduct
-        (ProductName)
-    select ProductName
+        (
+            ProductID,    
+            ProductName
+        )
+    select 
+        productKey,
+        ProductName
     from FinanceDB.dbo.Product;
 
     -- DimPromotion
     insert into staging_FinanceDW.dbo.DimPromotion
-        (PromotionYear)
-    select PromotionYear
+        (
+            promotionKey,
+            PromotionYear
+        )
+    select  
+        PromotionID, 
+        PromotionYear
     from FinanceDB.dbo.Promotion;
 
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
+            saleslocationKey,
             CountryName,
             SegmentName
         )
     select 
-            CountryName,
-            SegmentName
+        RegionID,
+        CountryName,
+        SegmentName
     from FinanceDB.dbo.Country c
         inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
@@ -275,6 +287,7 @@ begin
     -- DimSalesPerson
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
+            salespersonKey,
             FirstName,
             LastName,
             Gender,
@@ -284,13 +297,14 @@ begin
             DateOfSickLeave
         )
     select 
-            FirstName,
-            LastName,
-            Gender,
-            HireDate,
-            DateOfBirth,
-            DateOfLeave,
-            DateOfSickLeave
+        SalesPersondID,
+        FirstName,
+        LastName,
+        Gender,
+        HireDate,
+        DateOfBirth,
+        DateOfLeave,
+        DateOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
     -- FactOrders
@@ -304,44 +318,44 @@ begin
             [dateKey],
             SalesOrderNumber
         )
-        select
-            fo1.SalesPersonID,
-            KPI,
-            RegionID,
-            PromotionID,
-            ProductID,
-            SalesOrderDate,
-            SalesOrderNumber
-        from
-            (
-                select
-                    sp.SalesPersonID,
-                    KPI,
-                    SalesYear
-                from SalesPerson sp
-                    inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-            ) fo1
-            inner join
-            (
-                select
-                    sp.SalesPersonID,
-                    RegionID,
-                    PromotionID,
-                    ProductID,
-                    convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-                    SalesOrderNumber
-                from SalesPerson sp
-                    inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                    inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                    inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-            ) fo2
-        on fo1.SalesPersonID = fo2.SalesPersonID
-            and SalesYear = year(SalesOrderDate)
-        order by
-            SalesOrderDate desc,
-            fo1.SalesPersonID,
-            RegionID,
-            ProductID;
+    select
+        fo1.SalesPersonID,
+        KPI,
+        RegionID,
+        PromotionID,
+        ProductID,
+        SalesOrderDate,
+        SalesOrderNumber
+    from
+        (
+            select
+                sp.SalesPersonID,
+                KPI,
+                SalesYear
+            from SalesPerson sp
+                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        ) fo1
+        inner join
+        (
+            select
+                sp.SalesPersonID,
+                RegionID,
+                PromotionID,
+                ProductID,
+                convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+                SalesOrderNumber
+            from SalesPerson sp
+                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        ) fo2
+    on fo1.SalesPersonID = fo2.SalesPersonID
+        and SalesYear = year(SalesOrderDate)
+    order by
+        SalesOrderDate desc,
+        fo1.SalesPersonID,
+        RegionID,
+        ProductID;
 
         
 
