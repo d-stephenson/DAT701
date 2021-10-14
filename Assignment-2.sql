@@ -72,26 +72,26 @@ begin
     
     create table DimProduct
     (
-        productKey tinyint identity primary key,
+        productKey tinyint primary key,
         ProductName varchar(24)
     );
 
     create table DimPromotion
     (
-        promotionKey smallint identity primary key,
+        promotionKey smallint primary key,
         PromotionYear int
     );
 
     create table DimSalesLocation
     (
-        saleslocationKey smallint identity primary key,
+        saleslocationKey smallint primary key,
         CountryName varchar(56),
         SegmentName varchar(48)
     );
 
     create table DimSalesPerson
     (
-        salespersonKey smallint identity primary key,
+        salespersonKey smallint primary key,
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
@@ -103,7 +103,7 @@ begin
 
     create table FactOrder
     (
-        factorderKey int identity primary key,
+        factorderKey int primary key,
         salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
         KPI float(15),
         saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
@@ -125,6 +125,7 @@ begin
         SalePrice float(8),
         ManufacturingPrice float(8),
         RRP float(8),
+        PromotionYear int, 
         Discount float(15)
     );
 
@@ -360,7 +361,6 @@ begin
     -- FactSales 
     insert into staging_FinanceDW.dbo.FactSales
         (
-            factsalesKey,
             [dateKey],
             productKey,
             promotionKey,
@@ -373,35 +373,19 @@ begin
             Discount
         )
     select
-        fo1.SalesPersonID,
-        KPI,
-        RegionID,
-        PromotionID,
-        ProductID,
         SalesOrderDate,
-        SalesOrderNumber
-    from
-        (
-            select
-                sp.SalesPersonID,
-                KPI,
-                SalesYear
-            from SalesPerson sp
-                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-        ) fo1
-        inner join
-        (
-            select
-                sp.SalesPersonID,
-                RegionID,
-                PromotionID,
-                ProductID,
-                convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-                SalesOrderNumber
-            from SalesPerson sp
-                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        ProductID,
+        PromotionID,
+        RegionID,
+        SalesOrderLineNumber,
+        UnitsSold,
+        SalePrice,
+        ManufacturingPrice,
+        RRP,
+        Discount
+    from SalesRegion sr on 
+        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
         ) fo2
     on fo1.SalesPersonID = fo2.SalesPersonID
         and SalesYear = year(SalesOrderDate)
