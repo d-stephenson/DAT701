@@ -339,9 +339,9 @@ begin
             and SalesYear = year(SalesOrderDate)
         order by
             SalesOrderDate desc,
-            fo1.SalesPersonID desc,
-            RegionID desc,
-            ProductID desc;
+            fo1.SalesPersonID,
+            RegionID,
+            ProductID;
 
         
 
