@@ -360,13 +360,17 @@ begin
     -- FactSales 
     insert into staging_FinanceDW.dbo.FactSales
         (
-            salespersonKey,
-            KPI,
-            saleslocationKey,
-            promotionKey,
-            productKey,
+            factsalesKey,
             [dateKey],
-            SalesOrderNumber
+            productKey,
+            promotionKey,
+            saleslocationKey,
+            SalesOrderLineNumber,
+            UnitsSold,
+            SalePrice,
+            ManufacturingPrice,
+            RRP,
+            Discount
         )
     select
         fo1.SalesPersonID,
