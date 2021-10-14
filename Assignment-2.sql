@@ -357,7 +357,7 @@ begin
         RegionID,
         ProductID;
 
-    -- FactSales
+    -- FactSales 
     insert into staging_FinanceDW.dbo.FactSales
         (
             salespersonKey,
