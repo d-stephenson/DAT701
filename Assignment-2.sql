@@ -253,11 +253,13 @@ begin
     select ProductName
     from FinanceDB.dbo.Product;
 
+    -- DimPromotion
     insert into staging_FinanceDW.dbo.DimPromotion
         (PromotionYear)
     select PromotionYear
     from FinanceDB.dbo.Promotion;
 
+    -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
             CountryName,
@@ -270,6 +272,7 @@ begin
         inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
 
+    -- DimSalesPerson
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
             FirstName,
@@ -290,6 +293,17 @@ begin
             DateOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
+    -- FactOrders
+        insert into staging_FinanceDW.dbo.DimSalesPerson
+        (
+            FirstName,
+            LastName,
+            Gender,
+            HireDate,
+            DateOfBirth,
+            DateOfLeave,
+            DateOfSickLeave
+        )
     with cte_fo1(SalesPersonID, KPI, SalesYear) as
         (
             select
@@ -326,7 +340,6 @@ begin
         inner join cte_fo2 on cte_fo1.SalesPersonID = cte_fo2.SalesPersonID
     where
         cte_fo1.SalesYear = year(cte_fo2.SalesOrderDate);
-    go
 
 
 end;
