@@ -104,13 +104,13 @@ begin
     create table FactOrder
     (
         factorderKey int identity primary key,
-        [dateKey] int not null foreign key references DimDate([dateKey]),
-        productKey tinyint foreign key references DimProduct(productKey),
-        promotionKey smallint foreign key references DimPromotion(promotionKey),
-        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
         salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
-        SalesOrderNumber varchar(48),
-        KPI float(15)
+        KPI float(15),
+        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
+        promotionKey smallint foreign key references DimPromotion(promotionKey),
+        productKey tinyint foreign key references DimProduct(productKey),
+        [dateKey] int not null foreign key references DimDate([dateKey]),
+        SalesOrderNumber varchar(48)
     );
 
     create table FactSales
@@ -294,15 +294,15 @@ begin
     from FinanceDB.dbo.SalesPerson;
 
     -- FactOrders
-        insert into staging_FinanceDW.dbo.DimSalesPerson
+    insert into staging_FinanceDW.dbo.DimSalesPerson
         (
-            FirstName,
-            LastName,
-            Gender,
-            HireDate,
-            DateOfBirth,
-            DateOfLeave,
-            DateOfSickLeave
+            salespersonKey,
+            KPI,
+            saleslocationKey,
+            promotionKey,
+            productKey,
+            [dateKey],
+            SalesOrderNumber
         )
     with cte_fo1(SalesPersonID, KPI, SalesYear) as
         (
@@ -330,7 +330,6 @@ begin
     select
         cte_fo1.SalesPersonID,
         cte_fo1.KPI,
-        cte_fo1.SalesYear,
         cte_fo2.RegionID,
         cte_fo2.PromotionID,
         cte_fo2.ProductID,
