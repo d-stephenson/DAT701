@@ -328,7 +328,7 @@ begin
                     RegionID,
                     PromotionID,
                     ProductID,
-                    SalesOrderDate,
+                    convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
                     SalesOrderNumber
                 from SalesPerson sp
                     inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
@@ -336,7 +336,13 @@ begin
                     inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
             ) fo2
         on fo1.SalesPersonID = fo2.SalesPersonID
-            and fo1.SalesYear = year(fo2.SalesOrderDate);
+            and SalesYear = year(SalesOrderDate)
+        order by
+            SalesOrderDate desc,
+            fo1.SalesPersonID desc,
+            RegionID desc,
+            ProductID desc;
+
         
 
 
