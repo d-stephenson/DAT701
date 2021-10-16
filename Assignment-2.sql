@@ -311,6 +311,8 @@ begin
         DateOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
+
+    -- seperate procedure for dim and fact tables 
     -- FactOrders
     insert into staging_FinanceDW.dbo.FactOrder
         (
@@ -332,26 +334,26 @@ begin
         SalesOrderNumber
     from
         (
-            select
-                sp.SalesPersonID,
-                KPI,
-                SalesYear
-            from SalesPerson sp
-                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        select
+            sp.SalesPersonID,
+            KPI,
+            SalesYear
+        from SalesPerson sp
+            inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
         ) fo1
         inner join
         (
-            select
-                sp.SalesPersonID,
-                RegionID,
-                PromotionID,
-                ProductID,
-                convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-                SalesOrderNumber
-            from SalesPerson sp
-                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        select
+            sp.SalesPersonID,
+            RegionID,
+            PromotionID,
+            ProductID,
+            convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+            SalesOrderNumber
+        from SalesPerson sp
+            inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+            inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+            inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
         ) fo2
     on fo1.SalesPersonID = fo2.SalesPersonID
         and SalesYear = year(SalesOrderDate)
@@ -398,7 +400,40 @@ begin
         ProductID;  
    
     -- FactAggregatedValues
-
+    insert into staging_FinanceDW.dbo.FactAggregatedValues
+            (
+                [dateKey],
+                productKey,
+                promotionKey,
+                saleslocationKey,
+                SalesOrderLineNumber,
+                UnitsSold,
+                SalePrice,
+                ManufacturingPrice,
+                RRP,
+                Discount
+            )
+    select
+            convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+            pm.ProductID,
+            pm.PromotionID,
+            RegionID,
+            SalesOrderLineNumber,
+            UnitsSold,
+            SalePrice,
+            ManufacturingPrice,
+            RRP,
+            Discount
+        from SalesRegion sr
+            inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+            inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+            inner join Product pr on sli.ProductID = pr.ProductID
+            inner join ProductCost pc on pr.ProductID = pc.ProductID
+        order by
+            SalesOrderDate desc,
+            SalesOrderLineNumber,
+            RegionID,
+            ProductID;  
 
 
 
