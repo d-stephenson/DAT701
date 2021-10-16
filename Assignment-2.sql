@@ -113,6 +113,8 @@ begin
         promotionKey smallint foreign key references DimPromotion(promotionKey),
         productKey tinyint foreign key references DimProduct(productKey),
         [dateKey] int not null foreign key references DimDate([dateKey]),
+        SalesOrderID bigint,
+        SalesOrderLineItemID bigint, 
         SalesOrderNumber varchar(48)
     );
 
@@ -122,6 +124,8 @@ begin
         productKey tinyint foreign key references DimProduct(productKey),
         promotionKey smallint foreign key references DimPromotion(promotionKey),
         saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
+        SalesOrderID bigint,
+        SalesOrderLineItemID bigint, 
         SalesOrderLineNumber varchar(10),
         UnitsSold smallint,
         SalePrice float(8),
@@ -240,9 +244,12 @@ order by
 option (maxrecursion 0);
 go
 
--- Insert Into Procedure
+-- Insert Into Dimension Tables Procedure
 
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
+
+drop procedure if exists dim_insert_into;
+go
 
 create procedure dim_insert_into
 as
@@ -255,14 +262,14 @@ begin
             ProductName
         )
     select 
-        productKey,
+        ProductID,
         ProductName
     from FinanceDB.dbo.Product;
 
     -- DimPromotion
     insert into staging_FinanceDW.dbo.DimPromotion
         (
-            promotionKey,
+            PromotionID,
             PromotionYear
         )
     select  
@@ -314,9 +321,15 @@ go
 exec dim_insert_into;
 go
 
+-- Insert Into Fact Tables Procedure
 
+drop procedure if exists fact_insert_into;
+go
 
-    -- fact tables loaded in a seperate procedure after dim tables
+create procedure fact_insert_into
+as
+begin
+
     -- FactOrders
     insert into staging_FinanceDW.dbo.FactOrder
         (
