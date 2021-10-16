@@ -323,6 +323,14 @@ go
 
 -- Insert Into Fact Tables Procedure
 
+select * into #FactOrder from staging_FinanceDW.dbo.FactOrder where 1 = 0;
+go
+
+select * from #FactOrder;
+go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ 
 drop procedure if exists fact_insert_into;
 go
 
@@ -331,43 +339,33 @@ as
 begin
 
     -- FactOrders
-    insert into staging_FinanceDW.dbo.FactOrder
+   
+    insert into #FactOrder
         (
             [dateKey],
-            salespersonKey,
-            saleslocationKey,
-            promotionKey,
             productKey,
-            KPI,
-            SalesOrderNumber
+            promotionKey,
+            saleslocationKey,
+            salespersonKey,
+            SalesOrderNumber,
+            KPI
         )
     select
-        [dateKey],
-        salespersonKey,
-        saleslocationKey,
-        promotionKey,
-        productKey,
-        KPI,
-        SalesOrderNumber
+        SalesOrderDate,
+        ProductID,
+        PromotionID,
+        RegionID,
+        fo1.SalesPersonID,
+        SalesOrderNumber,
+        KPI
     from
-        (
-            select 
-                [dateKey],
-                salespersonKey,
-                saleslocationKey,
-                promotionKey,
-                productKey, 
-            from 
-
-        ) ft
-        inner join 
         (
             select
                 sp.SalesPersonID,
                 KPI,
                 SalesYear
-            from SalesPerson sp
-                inner join SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+            from FinanceDB.dbo.SalesPerson sp
+                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
         ) fo1
         inner join
         (
@@ -376,12 +374,12 @@ begin
                 RegionID,
                 PromotionID,
                 ProductID,
-                convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+                convert(int, SalesOrderDate) as SalesOrderDate,
                 SalesOrderNumber
-            from SalesPerson sp
-                inner join SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                inner join SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+            from FinanceDB.dbo.SalesPerson sp
+                inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+                inner join FinanceDB.dbo.SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+                inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
         ) fo2
     on fo1.SalesPersonID = fo2.SalesPersonID
         and SalesYear = year(SalesOrderDate)
@@ -390,6 +388,17 @@ begin
         fo1.SalesPersonID,
         RegionID,
         ProductID;
+
+end;
+go
+
+exec fact_insert_into;
+go   
+
+
+
+
+
 
     -- FactSales 
     insert into staging_FinanceDW.dbo.FactSales
