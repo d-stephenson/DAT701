@@ -30,15 +30,15 @@ go
 create procedure create_tables
 as
 begin
-        
+
+    drop table if exists FactAggregatedValues;  
+    drop table if exists FactSales; 
+    drop table if exists FactOrder;
     drop table if exists Dimdate;
     drop table if exists DimProduct;
     drop table if exists DimPromotion;
     drop table if exists DimSalesLocation;
     drop table if exists DimSalesPerson;
-    drop table if exists FactOrder;
-    drop table if exists FactSales;
-    drop table if exists FactAggregatedValues;
 
     create table DimDate
     (
