@@ -72,26 +72,30 @@ begin
     
     create table DimProduct
     (
-        productKey tinyint identity primary key,
+        productKey int identity primary key,
+        ProductID tinyint,
         ProductName varchar(24)
     );
 
     create table DimPromotion
     (
-        promotionKey smallint identity primary key,
+        promotionKey int identity primary key,
+        PromotionID smallint,
         PromotionYear int
     );
 
     create table DimSalesLocation
     (
-        saleslocationKey smallint identity primary key,
+        saleslocationKey int identity primary key,
+        RegionID smallint,
         CountryName varchar(56),
         SegmentName varchar(48)
     );
 
     create table DimSalesPerson
     (
-        salespersonKey smallint identity primary key,
+        salespersonKey int identity primary key,
+        SalesPersonID smallint,
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
@@ -272,7 +276,7 @@ begin
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
-            saleslocationKey,
+            RegionID,
             CountryName,
             SegmentName
         )
@@ -287,7 +291,7 @@ begin
     -- DimSalesPerson
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
-            salespersonKey,
+            SalesPersonID,
             FirstName,
             LastName,
             Gender,
