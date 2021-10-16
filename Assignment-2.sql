@@ -116,7 +116,7 @@ begin
         SalesOrderNumber varchar(48)
     );
 
-    create table FactSales
+    create table FactSales 
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         productKey tinyint foreign key references DimProduct(productKey),
