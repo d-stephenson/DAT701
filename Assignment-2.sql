@@ -311,20 +311,28 @@ begin
         DateOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
-
-    -- seperate procedure for dim and fact tables 
     -- FactOrders
     insert into staging_FinanceDW.dbo.FactOrder
         (
+            [dateKey],
             salespersonKey,
-            KPI,
             saleslocationKey,
             promotionKey,
             productKey,
-            [dateKey],
+            SalesPersonID,
+            KPI,
+            RegionID,
+            PromotionID,
+            ProductID,
+            SalesOrderDate,
             SalesOrderNumber
         )
     select
+        [dateKey],
+        salespersonKey,
+        saleslocationKey,
+        promotionKey,
+        productKey,
         fo1.SalesPersonID,
         KPI,
         RegionID,
