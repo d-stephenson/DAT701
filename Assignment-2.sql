@@ -107,7 +107,6 @@ begin
 
     create table FactOrder
     (
-        factorderKey int primary key,
         salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
         KPI float(15),
         saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
@@ -119,7 +118,6 @@ begin
 
     create table FactSales
     (
-        factsalesKey int identity primary key,
         [dateKey] int not null foreign key references DimDate([dateKey]),
         productKey tinyint foreign key references DimProduct(productKey),
         promotionKey smallint foreign key references DimPromotion(promotionKey),
@@ -134,7 +132,6 @@ begin
 
     create table FactAggregatedValues
     (
-        factaggregatedvaluesKey int identity primary key,
         [dateKey] int not null foreign key references DimDate([dateKey]),
         productKey tinyint foreign key references DimProduct(productKey),
         promotionKey smallint foreign key references DimPromotion(promotionKey),
@@ -320,27 +317,17 @@ begin
             saleslocationKey,
             promotionKey,
             productKey,
-            SalesPersonID,
             KPI,
-            RegionID,
-            PromotionID,
-            ProductID,
-            SalesOrderDate,
             SalesOrderNumber
         )
     select
-        [dateKey],
-        salespersonKey,
-        saleslocationKey,
-        promotionKey,
-        productKey,
-        fo1.SalesPersonID,
-        KPI,
-        RegionID,
-        PromotionID,
-        ProductID,
-        SalesOrderDate,
-        SalesOrderNumber
+            [dateKey],
+            salespersonKey,
+            saleslocationKey,
+            promotionKey,
+            productKey,
+            KPI,
+            SalesOrderNumber
     from
         (
             select 
@@ -350,7 +337,6 @@ begin
                 promotionKey,
                 productKey, 
             from 
-
 
         ) ft
         inner join 
