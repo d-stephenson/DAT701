@@ -72,26 +72,26 @@ begin
     
     create table DimProduct
     (
-        productKey tinyint primary key,
+        productKey tinyint identity primary key,
         ProductName varchar(24)
     );
 
     create table DimPromotion
     (
-        promotionKey smallint primary key,
+        promotionKey smallint identity primary key,
         PromotionYear int
     );
 
     create table DimSalesLocation
     (
-        saleslocationKey smallint primary key,
+        saleslocationKey smallint identity primary key,
         CountryName varchar(56),
         SegmentName varchar(48)
     );
 
     create table DimSalesPerson
     (
-        salespersonKey smallint primary key,
+        salespersonKey smallint identity primary key,
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
