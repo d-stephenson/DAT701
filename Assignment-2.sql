@@ -244,7 +244,7 @@ go
 
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
 
-create procedure insert_into
+create procedure dim_insert_into
 as
 begin
 
@@ -308,6 +308,14 @@ begin
         DateOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
+end;
+go
+
+exec dim_insert_into;
+go
+
+
+
     -- fact tables loaded in a seperate procedure after dim tables
     -- FactOrders
     insert into staging_FinanceDW.dbo.FactOrder
@@ -321,13 +329,13 @@ begin
             SalesOrderNumber
         )
     select
-            [dateKey],
-            salespersonKey,
-            saleslocationKey,
-            promotionKey,
-            productKey,
-            KPI,
-            SalesOrderNumber
+        [dateKey],
+        salespersonKey,
+        saleslocationKey,
+        promotionKey,
+        productKey,
+        KPI,
+        SalesOrderNumber
     from
         (
             select 
@@ -442,11 +450,4 @@ begin
         RegionID,
         ProductID;  
 
-
-
-end;
-go
-
-exec insert_into;
-go
 
