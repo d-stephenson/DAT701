@@ -179,6 +179,8 @@ go
 
 -- DML Inserting into tables
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 -- Insert into DimDate table
 -- https://gist.github.com/sfrechette/0be7716d98d8aa107e64
 
@@ -195,7 +197,7 @@ set @DateCalendarEnd = '2021-12-31';
 -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
 -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
 
-set @FiscalMonthOffset = 1;
+set @FiscalMonthOffset = 0;
  
 with DateDimension  
 as
@@ -260,7 +262,9 @@ order by
 option (maxrecursion 0);
 go
 
--- Insert Into Dimension Tables Procedure
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Insert Into dimension tables procedure
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
 
 drop procedure if exists dim_insert_into;
@@ -333,10 +337,16 @@ begin
 end;
 go
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Execute dim Insert Into procedure
+
 exec dim_insert_into;
 go
 
--- Insert Into Fact Tables Procedure
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Insert Into fact tables procedure
 
 drop table if exists #FactOrder;
 go
@@ -418,8 +428,14 @@ begin
 end;
 go
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Execute fact Insert Into procedure
+
 exec fact_insert_into;
 go  
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 
