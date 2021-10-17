@@ -94,6 +94,7 @@ begin
     create table DimSalesLocation
     (
         saleslocationKey int identity primary key,
+        SalesRegionID smallint, 
         RegionID smallint,
         CountryName varchar(56),
         SegmentName varchar(48)
@@ -294,11 +295,13 @@ begin
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
+            SalesRegionID,
             RegionID,
             CountryName,
             SegmentName
         )
     select
+        SalesRegionID,
         RegionID,
         CountryName,
         SegmentName
@@ -420,8 +423,8 @@ begin
         FinanceDB.dbo.SalesOrder so 
         inner join staging_FinanceDW.dbo.DimDate dd on year(so.SalesOrderDate) = left([dd.datekey], 4) 
         inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID 
-        inner join FinanceDB.dbo.SalesOrder dsp on dsp.salespersonKey = sk.SalesPersonID
-        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on dsl.salespersonKey = sk.SalesPersonID
+        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID 
+        inner join 
     order by
         salespersonKey,
         SalesYear;
