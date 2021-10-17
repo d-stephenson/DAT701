@@ -1,5 +1,3 @@
--- Assignment 2 | DAT701
-
 use FinanceDB
 go
 
@@ -30,16 +28,16 @@ go
 create procedure create_tables
 as
 begin
-
-    drop table if exists FactAggregatedValues;  
-    drop table if exists FactSales; 
+      
+    drop table if exists FactAggregatedValues;
+    drop table if exists FactSales;
     drop table if exists FactOrder;
     drop table if exists Dimdate;
     drop table if exists DimProduct;
     drop table if exists DimPromotion;
     drop table if exists DimSalesLocation;
     drop table if exists DimSalesPerson;
-
+    
     create table DimDate
     (
         DateKey                 int not null,
@@ -100,32 +98,34 @@ begin
         LastName varchar(64),
         Gender varchar(20),
         HireDate date,
-        DateOfBirth date,
-        DateOfLeave date,
-        DateOfSickLeave date
+        DayOfBirth date,
+        DaysOfLeave int,
+        DaysOfSickLeave int
     );
 
     create table FactOrder
     (
-        salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
-        KPI float(15),
-        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
-        promotionKey smallint foreign key references DimPromotion(promotionKey),
-        productKey tinyint foreign key references DimProduct(productKey),
         [dateKey] int not null foreign key references DimDate([dateKey]),
+        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
+        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
+        promotionKey int foreign key references DimPromotion(promotionKey),
+        productKey int foreign key references DimProduct(productKey),
         SalesOrderID bigint,
-        SalesOrderLineItemID bigint, 
-        SalesOrderNumber varchar(48)
+        SalesOrderLineItemID bigint,
+        SalesOrderNumber varchar(48),
+        SalesYear int,
+        KPI float(15)
     );
 
-    create table FactSales 
+    create table FactSales
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        productKey tinyint foreign key references DimProduct(productKey),
-        promotionKey smallint foreign key references DimPromotion(promotionKey),
-        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
+        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
+        productKey int foreign key references DimProduct(productKey),
+        promotionKey int foreign key references DimPromotion(promotionKey),
+        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
         SalesOrderID bigint,
-        SalesOrderLineItemID bigint, 
+        SalesOrderLineItemID bigint,
         SalesOrderLineNumber varchar(10),
         UnitsSold smallint,
         SalePrice float(8),
@@ -137,10 +137,10 @@ begin
     create table FactAggregatedValues
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        productKey tinyint foreign key references DimProduct(productKey),
-        promotionKey smallint foreign key references DimPromotion(promotionKey),
-        saleslocationKey smallint foreign key references DimSalesLocation(saleslocationKey),
-        salespersonKey smallint foreign key references DimSalesPerson(salespersonKey),
+        productKey int foreign key references DimProduct(productKey),
+        promotionKey int foreign key references DimPromotion(promotionKey),
+        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
+        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
         TotalSale float(8),
         GrossProfit float(8),
         TotalYearlyKPI float(15),
@@ -164,7 +164,7 @@ go
 
 -- DML Inserting into tables
 
--- Dim Date 
+-- Dim Date
 -- https://gist.github.com/sfrechette/0be7716d98d8aa107e64
 
 declare @DateCalendarStart  datetime,
@@ -173,13 +173,13 @@ declare @DateCalendarStart  datetime,
         @FiscalMonthOffset  int;
  
 set @DateCalendarStart = '2005-01-01';
-set @DateCalendarEnd = '2015-12-31';
+set @DateCalendarEnd = '2021-12-31';
  
 -- Set this to the number of months to add or extract to the current date to get the beginning
 -- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
 -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
 -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
-set @FiscalMonthOffset = 6;
+set @FiscalMonthOffset = 1;
  
 with DateDimension  
 as
@@ -245,7 +245,6 @@ option (maxrecursion 0);
 go
 
 -- Insert Into Dimension Tables Procedure
-
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
 
 drop procedure if exists dim_insert_into;
@@ -255,13 +254,13 @@ create procedure dim_insert_into
 as
 begin
 
-    -- DimProduct
+    -- from DimProduct
     insert into staging_FinanceDW.dbo.DimProduct
         (
             ProductID,    
             ProductName
         )
-    select 
+    select
         ProductID,
         ProductName
     from FinanceDB.dbo.Product;
@@ -273,7 +272,7 @@ begin
             PromotionYear
         )
     select  
-        PromotionID, 
+        PromotionID,
         PromotionYear
     from FinanceDB.dbo.Promotion;
 
@@ -284,7 +283,7 @@ begin
             CountryName,
             SegmentName
         )
-    select 
+    select
         RegionID,
         CountryName,
         SegmentName
@@ -300,19 +299,19 @@ begin
             LastName,
             Gender,
             HireDate,
-            DateOfBirth,
-            DateOfLeave,
-            DateOfSickLeave
+            DayOfBirth,
+            DaysOfLeave,
+            DaysOfSickLeave
         )
-    select 
-        SalesPersondID,
+    select
+        SalesPersonID,
         FirstName,
         LastName,
         Gender,
         HireDate,
-        DateOfBirth,
-        DateOfLeave,
-        DateOfSickLeave
+        DayOfBirth,
+        DaysOfLeave,
+        DaysOfSickLeave
     from FinanceDB.dbo.SalesPerson;
 
 end;
@@ -322,6 +321,9 @@ exec dim_insert_into;
 go
 
 -- Insert Into Fact Tables Procedure
+
+drop table if exists #FactOrder;
+go
 
 select * into #FactOrder from staging_FinanceDW.dbo.FactOrder where 1 = 0;
 go
@@ -343,20 +345,26 @@ begin
     insert into #FactOrder
         (
             [dateKey],
-            productKey,
-            promotionKey,
-            saleslocationKey,
             salespersonKey,
+            saleslocationKey,
+            promotionKey,
+            productKey,
+            SalesOrderID,
+            SalesOrderLineItemID,
             SalesOrderNumber,
+            SalesYear,
             KPI
         )
     select
         SalesOrderDate,
-        ProductID,
-        PromotionID,
-        RegionID,
         fo1.SalesPersonID,
+        RegionID,
+        PromotionID,
+        ProductID,
+        SalesOrderID,
+        SalesOrderLineItemID,
         SalesOrderNumber,
+        SalesYear,
         KPI
     from
         (
@@ -375,6 +383,8 @@ begin
                 PromotionID,
                 ProductID,
                 convert(int, SalesOrderDate) as SalesOrderDate,
+                so.SalesOrderID,
+                SalesOrderLineItemID,
                 SalesOrderNumber
             from FinanceDB.dbo.SalesPerson sp
                 inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
@@ -393,83 +403,52 @@ end;
 go
 
 exec fact_insert_into;
-go   
+go  
 
 
 
 
 
 
-    -- FactSales 
-    insert into staging_FinanceDW.dbo.FactSales
-        (
-            [dateKey],
-            productKey,
-            promotionKey,
-            saleslocationKey,
-            SalesOrderLineNumber,
-            UnitsSold,
-            SalePrice,
-            ManufacturingPrice,
-            RRP,
-            Discount
-        )
-   select
-        convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-        pm.ProductID,
-        pm.PromotionID,
-        RegionID,
-        SalesOrderLineNumber,
-        UnitsSold,
-        SalePrice,
-        ManufacturingPrice,
-        RRP,
-        Discount
-    from SalesRegion sr
-        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
-        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join Product pr on sli.ProductID = pr.ProductID
-        inner join ProductCost pc on pr.ProductID = pc.ProductID
-    order by
-        SalesOrderDate desc,
-        SalesOrderLineNumber,
-        RegionID,
-        ProductID;  
-   
-    -- FactAggregatedValues
-    insert into staging_FinanceDW.dbo.FactAggregatedValues
-        (
-            [dateKey],
-            productKey,
-            promotionKey,
-            saleslocationKey,
-            SalesOrderLineNumber,
-            UnitsSold,
-            SalePrice,
-            ManufacturingPrice,
-            RRP,
-            Discount
-        )
-    select
-        convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-        pm.ProductID,
-        pm.PromotionID,
-        RegionID,
-        SalesOrderLineNumber,
-        UnitsSold,
-        SalePrice,
-        ManufacturingPrice,
-        RRP,
-        Discount
-    from SalesRegion sr
-        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
-        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join Product pr on sli.ProductID = pr.ProductID
-        inner join ProductCost pc on pr.ProductID = pc.ProductID
-    order by
-        SalesOrderDate desc,
-        SalesOrderLineNumber,
-        RegionID,
-        ProductID;  
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+select
+    convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+    pm.ProductID,
+    pm.PromotionID,
+    RegionID,
+    SalesOrderLineNumber,
+    UnitsSold,
+    SalePrice,
+    ManufacturingPrice,
+    RRP,
+    PromotionYear,
+    Discount
+from SalesRegion sr
+    inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+    inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+    inner join Promotion pm on sli.PromotionID = pm.PromotionID
+    inner join Product pr on pm.ProductID = pr.ProductID
+    inner join ProductCost pc on pr.ProductID = pc.ProductID
+order by
+    SalesOrderDate desc,
+    SalesOrderLineNumber,
+    RegionID,
+    ProductID;  
+go
