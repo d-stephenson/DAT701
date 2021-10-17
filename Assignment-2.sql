@@ -372,57 +372,36 @@ begin
             [dateKey],
             salespersonKey,
             saleslocationKey,
-            promotionKey,
-            productKey,
-            SalesOrderID,
-            SalesOrderLineItemID,
-            SalesOrderNumber,
             SalesYear,
             KPI
         )
     select
-        SalesOrderDate,
-        fo1.SalesPersonID,
-        RegionID,
-        PromotionID,
-        ProductID,
-        SalesOrderID,
-        SalesOrderLineItemID,
-        SalesOrderNumber,
-        SalesYear,
-        KPI
+            [dateKey],
+            SalesPersonID,
+            RegionID,
+            SalesYear,
+            KPI
     from
         (
             select
-                sp.SalesPersonID,
-                KPI,
-                SalesYear
-            from FinanceDB.dbo.SalesPerson sp
-                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-        ) fo1
+                [dateKey]
+            from staging.dbo.DimDate
+        ) t1
         inner join
         (
             select
                 sp.SalesPersonID,
                 RegionID,
-                PromotionID,
-                ProductID,
-                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SalesOrderDate,
-                so.SalesOrderID,
-                SalesOrderLineItemID,
-                SalesOrderNumber
+                SalesYear,
+                KPI
             from FinanceDB.dbo.SalesPerson sp
+                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
                 inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                inner join FinanceDB.dbo.SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        ) fo2
-    on fo1.SalesPersonID = fo2.SalesPersonID
-        and SalesYear = left(SalesOrderDate, 4)
+        ) t2
+    on SalesYear = left([dateKey]], 4)
     order by
-        SalesOrderDate desc,
-        fo1.SalesPersonID,
-        RegionID,
-        ProductID;
+        SalesPersonID,
+        SalesYear;
 
     -- Fact_SalesOrders
     select
@@ -476,7 +455,53 @@ go
 
 
 
-
+    insert into #FactOrder
+        (
+            [dateKey],
+            salespersonKey,
+            saleslocationKey,
+            SalesYear,
+            KPI
+        )
+    select
+            [dateKey],
+            fo1.SalesPersonID,
+            RegionID,
+            SalesYear,
+            KPI
+    from
+        (
+            select
+                sp.SalesPersonID,
+                RegionID,
+                SalesYear,
+                KPI
+            from FinanceDB.dbo.SalesPerson sp
+                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
+        ) fo1
+        inner join
+        (
+            select
+                sp.SalesPersonID,
+                RegionID,
+                PromotionID,
+                ProductID,
+                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SalesOrderDate,
+                so.SalesOrderID,
+                SalesOrderLineItemID,
+                SalesOrderNumber
+            from FinanceDB.dbo.SalesPerson sp
+                inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
+                inner join FinanceDB.dbo.SalesOrder so on sp.SalesPersonID = so.SalesPersonID
+                inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        ) fo2
+    on fo1.SalesPersonID = fo2.SalesPersonID
+        and SalesYear = left(SalesOrderDate, 4)
+    order by
+        SalesOrderDate desc,
+        fo1.SalesPersonID,
+        RegionID,
+        ProductID;
 
 
 
