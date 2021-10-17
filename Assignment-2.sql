@@ -399,6 +399,14 @@ begin
         SalesYear;
 
     -- Fact_SalesOrders
+    insert into Fact_SalesOrders
+        (
+            [dateKey],
+            salespersonKey,
+            saleslocationKey,
+            SalesYear,
+            KPI
+        )
     select
         convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
         pm.ProductID,
