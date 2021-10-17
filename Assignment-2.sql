@@ -445,7 +445,7 @@ begin
     --         saleslocationKey,
     --         productKey,
     --         promotionKey,
-    --         TotalSale
+    --         TotalSale    
     --     )
     -- select
     --     [dateKey],
