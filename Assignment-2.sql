@@ -371,31 +371,18 @@ begin
             KPI
         )
     select
-            [dateKey],
-            SalesPersonID,
-            RegionID,
-            SalesYear,
-            KPI
+        [dateKey],
+        salespersonKey,
+        saleslocationKey,
+        SalesYear,
+        KPI
     from
-        (
-            select
-                [dateKey]
-            from staging.dbo.DimDate
-        ) t1
-        inner join
-        (
-            select
-                sp.SalesPersonID,
-                RegionID,
-                SalesYear,
-                KPI
-            from FinanceDB.dbo.SalesPerson sp
-                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-                inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-        ) t2
-    on SalesYear = left([dateKey]], 4)
+        staging_FinanceDW.dbo.DimDate dd 
+        inner join FinanceDB.dbo.SalesKPI sk on left([dd.datekey], 4) = sk.SalesYear
+        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on dsp.SalesPersonID = sk.SalesPersonID
+        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on dsl.SalesPersonID = sk.SalesPersonID
     order by
-        SalesPersonID,
+        salespersonKey,
         SalesYear;
 
     -- Fact_SalesOrders
@@ -411,15 +398,16 @@ begin
             SalesOrderLineNumber,
             UnitsSold,
             SalePrice,
-            ManufacturingProce,
+            ManufacturingPrice,
             RRP,
             Discount
         )
     select
-        convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-        pm.ProductID,
-        pm.PromotionID,
-        RegionID,
+        [dateKey],
+        salespersonKey,
+        saleslocationKey,
+        promductKey,
+        promotionKey,
         SalesOrderID,
         SalesOrderLineItemID,
         SalesOrderLineNumber,
@@ -428,17 +416,15 @@ begin
         ManufacturingPrice,
         RRP,
         Discount
-    from SalesRegion sr
-        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
-        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join Promotion pm on sli.PromotionID = pm.PromotionID
-        inner join Product pr on pm.ProductID = pr.ProductID
-        inner join ProductCost pc on pr.ProductID = pc.ProductID
+    from
+        FinanceDB.dbo.SalesOrder so 
+        inner join staging_FinanceDW.dbo.DimDate dd on year(so.SalesOrderDate) = left([dd.datekey], 4) 
+        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID 
+        inner join FinanceDB.dbo.SalesOrder dsp on dsp.salespersonKey = sk.SalesPersonID
+        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on dsl.salespersonKey = sk.SalesPersonID
     order by
-        SalesOrderDate desc,
-        SalesOrderLineNumber,
-        RegionID,
-        ProductID; 
+        salespersonKey,
+        SalesYear;
 
 end;
 go
