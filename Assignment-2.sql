@@ -366,8 +366,7 @@ create procedure fact_insert_into
 as
 begin
 
-    -- FactOrders
-   
+    -- Fact_SalesRepPerformance
     insert into #FactOrder
         (
             [dateKey],
@@ -425,6 +424,31 @@ begin
         RegionID,
         ProductID;
 
+    -- Fact_SalesOrders
+    select
+        convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
+        pm.ProductID,
+        pm.PromotionID,
+        RegionID,
+        SalesOrderLineNumber,
+        UnitsSold,
+        SalePrice,
+        ManufacturingPrice,
+        RRP,
+        PromotionYear,
+        Discount
+    from SalesRegion sr
+        inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
+        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        inner join Promotion pm on sli.PromotionID = pm.PromotionID
+        inner join Product pr on pm.ProductID = pr.ProductID
+        inner join ProductCost pc on pr.ProductID = pc.ProductID
+    order by
+        SalesOrderDate desc,
+        SalesOrderLineNumber,
+        RegionID,
+        ProductID; 
+
 end;
 go
 
@@ -459,28 +483,3 @@ go
 
 
 
-
-select
-    convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
-    pm.ProductID,
-    pm.PromotionID,
-    RegionID,
-    SalesOrderLineNumber,
-    UnitsSold,
-    SalePrice,
-    ManufacturingPrice,
-    RRP,
-    PromotionYear,
-    Discount
-from SalesRegion sr
-    inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
-    inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-    inner join Promotion pm on sli.PromotionID = pm.PromotionID
-    inner join Product pr on pm.ProductID = pr.ProductID
-    inner join ProductCost pc on pr.ProductID = pc.ProductID
-order by
-    SalesOrderDate desc,
-    SalesOrderLineNumber,
-    RegionID,
-    ProductID;  
-go
