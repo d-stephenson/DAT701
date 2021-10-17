@@ -1,3 +1,6 @@
+-- DAT602 | Assignment 2
+-- Data Warehouse
+
 use FinanceDB
 go
 
@@ -13,6 +16,8 @@ exec sp_columns SalesPerson
 exec sp_columns SalesRegion
 exec sp_columns Segment
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 create database staging_FinanceDW;
 go
 
@@ -21,6 +26,10 @@ go
 
 use staging_FinanceDW;
 go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Create tables procedure
 
 drop procedure if exists create_tables
 go
@@ -159,12 +168,18 @@ begin
 end;
 go
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Execute create tables procedure
+
 exec create_tables;
 go
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 -- DML Inserting into tables
 
--- Dim Date
+-- Insert into DimDate table
 -- https://gist.github.com/sfrechette/0be7716d98d8aa107e64
 
 declare @DateCalendarStart  datetime,
@@ -179,6 +194,7 @@ set @DateCalendarEnd = '2021-12-31';
 -- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
 -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
 -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
+
 set @FiscalMonthOffset = 1;
  
 with DateDimension  
