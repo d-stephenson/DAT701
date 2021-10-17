@@ -382,7 +382,7 @@ begin
                 RegionID,
                 PromotionID,
                 ProductID,
-                convert(int, SalesOrderDate) as SalesOrderDate,
+                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SalesOrderDate,
                 so.SalesOrderID,
                 SalesOrderLineItemID,
                 SalesOrderNumber
@@ -392,7 +392,7 @@ begin
                 inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
         ) fo2
     on fo1.SalesPersonID = fo2.SalesPersonID
-        and SalesYear = year(SalesOrderDate)
+        and SalesYear = left(SalesOrderDate, 4)
     order by
         SalesOrderDate desc,
         fo1.SalesPersonID,
