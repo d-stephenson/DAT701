@@ -112,21 +112,16 @@ begin
         DaysOfSickLeave int
     );
 
-    create table FactOrder
+    create table Fact_SalesRepPerformance
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         salespersonKey int foreign key references DimSalesPerson(salespersonKey),
         saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
-        promotionKey int foreign key references DimPromotion(promotionKey),
-        productKey int foreign key references DimProduct(productKey),
-        SalesOrderID bigint,
-        SalesOrderLineItemID bigint,
-        SalesOrderNumber varchar(48),
         SalesYear int,
         KPI float(15)
     );
 
-    create table FactSales
+    create table FactSalesOrder
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         salespersonKey int foreign key references DimSalesPerson(salespersonKey),
@@ -146,10 +141,10 @@ begin
     create table FactAggregatedValues
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
+        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
         productKey int foreign key references DimProduct(productKey),
         promotionKey int foreign key references DimPromotion(promotionKey),
         saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
-        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
         TotalSale float(8),
         GrossProfit float(8),
         TotalYearlyKPI float(15),
@@ -367,7 +362,7 @@ as
 begin
 
     -- Fact_SalesRepPerformance
-    insert into #FactOrder
+    insert into Fact_SalesRepPerformance
         (
             [dateKey],
             salespersonKey,
