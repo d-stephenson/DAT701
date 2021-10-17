@@ -391,7 +391,7 @@ begin
         salespersonKey,
         saleslocationKey;
 
-    -- Fact_SalesOrders
+    -- Fact_SalesOrder
     insert into FactSalesOrder
         (
             [dateKey],
@@ -484,6 +484,3 @@ exec fact_insert_into;
 go  
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-
