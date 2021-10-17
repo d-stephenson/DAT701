@@ -39,9 +39,9 @@ as
 begin
       
     drop table if exists FactAggregatedValues;
-    drop table if exists FactSales;
-    drop table if exists FactOrder;
-    drop table if exists Dimdate;
+    drop table if exists FactSalesRepPerformance;
+    drop table if exists FactSalesOrder;
+    drop table if exists DimDate;
     drop table if exists DimProduct;
     drop table if exists DimPromotion;
     drop table if exists DimSalesLocation;
@@ -94,7 +94,7 @@ begin
     create table DimSalesLocation
     (
         saleslocationKey int identity primary key,
-        SalesRegionID smallint, 
+        SalesRegionID smallint,
         RegionID smallint,
         CountryName varchar(56),
         SegmentName varchar(48)
@@ -113,13 +113,13 @@ begin
         DaysOfSickLeave int
     );
 
-    create table Fact_SalesRepPerformance
+    create table FactSalesRepPerformance
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         salespersonKey int foreign key references DimSalesPerson(salespersonKey),
         saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
         SalesYear int,
-        KPI float(15)
+        KPI float
     );
 
     create table FactSalesOrder
@@ -133,10 +133,10 @@ begin
         SalesOrderLineItemID bigint,
         SalesOrderLineNumber varchar(10),
         UnitsSold smallint,
-        SalePrice float(8),
-        ManufacturingPrice float(8),
-        RRP float(8),
-        Discount float(15)
+        SalePrice float,
+        ManufacturingPrice float,
+        RRP float,
+        Discount float
     );
 
     create table FactAggregatedValues
@@ -146,10 +146,10 @@ begin
         productKey int foreign key references DimProduct(productKey),
         promotionKey int foreign key references DimPromotion(promotionKey),
         saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
-        TotalSale float(8),
-        GrossProfit float(8),
-        TotalYearlyKPI float(15),
-        AnnualPerformance float(15),
+        TotalSale float,
+        GrossProfit float,
+        TotalYearlyKPI float,
+        AnnualPerformance float,
         SalesRepRank int,
         GrossProfitRank int,
         TotalProductSales int,
@@ -158,7 +158,7 @@ begin
         TotalItems int,
         Margin int,
         PercentageDiscount int,
-        TotalRRP float(8),
+        TotalRRP float,
         UniqueItems int
     );
 end;
@@ -296,17 +296,18 @@ begin
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
             SalesRegionID,
-            RegionID,
+            r.RegionID,
             CountryName,
             SegmentName
         )
     select
         SalesRegionID,
-        RegionID,
+        r.RegionID,
         CountryName,
         SegmentName
     from FinanceDB.dbo.Country c
         inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
+        inner join FinanceDB.dbo.SalesRegion sr on r.RegionID = sr.RegionID
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
 
     -- DimSalesPerson
@@ -346,14 +347,14 @@ go
 
 -- Insert Into fact tables procedure
 
-drop table if exists #FactOrder;
-go
+--drop table if exists #FactOrder;
+--go
 
-select * into #FactOrder from staging_FinanceDW.dbo.FactOrder where 1 = 0;
-go
+--select * into #FactOrder from staging_FinanceDW.dbo.FactOrder where 1 = 0;
+--go
 
-select * from #FactOrder;
-go
+--select * from #FactOrder;
+--go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
  
@@ -380,17 +381,18 @@ begin
         SalesYear,
         KPI
     from
-        staging_FinanceDW.dbo.DimDate dd 
-        inner join FinanceDB.dbo.SalesKPI sk on left([dd.datekey], 4) = sk.SalesYear
-        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on dsp.SalesPersonID = sk.SalesPersonID
-        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on dsl.SalesPersonID = sk.SalesPersonID
+        staging_FinanceDW.dbo.DimDate dd
+        inner join FinanceDB.dbo.SalesKPI sk on left(dd.[datekey], 4) = sk.SalesYear
+        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on sk.SalesPersonID = dsp.SalesPersonID
+        inner join FinanceDB.dbo.SalesRegion sr on sk.SalesPersonID = sr.SalesPersonID
+        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on sr.SalesRegionID = dsl.SalesRegionID
     order by
         [dateKey],
         salespersonKey,
         saleslocationKey;
 
     -- Fact_SalesOrders
-    insert into FactSalesOrders
+    insert into FactSalesOrder
         (
             [dateKey],
             salespersonKey,
@@ -412,7 +414,7 @@ begin
         saleslocationKey,
         productKey,
         promotionKey,
-        SalesOrderID,
+        so.SalesOrderID,
         SalesOrderLineItemID,
         SalesOrderLineNumber,
         UnitsSold,
@@ -421,16 +423,16 @@ begin
         RRP,
         Discount
     from
-        FinanceDB.dbo.SalesOrder so 
-        inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = [dd.datekey]
-        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID 
-        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID 
-        inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join FinanceDB.dbo.Promotiom pm on sli.PromotionID = pm.PromotionID
+        FinanceDB.dbo.SalesOrder so
+        inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = dd.[datekey]
+        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
+        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
+        inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+        inner join FinanceDB.dbo.Promotion pm on sli.PromotionID = pm.PromotionID
         inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
         inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
         inner join staging_FinanceDW.dbo.DimProduct dp on dp.ProductID = p.ProductID
-        inner join staging_FinanceDW.dbo.DimPromotion dm on dp.PromotionID = p.PromotionID
+        inner join staging_FinanceDW.dbo.DimPromotion dm on pm.PromotionID = dm.PromotionID
     order by
         [dateKey],
         salespersonKey,
@@ -455,10 +457,10 @@ begin
     --     promotionKey,
     --     TotalSale
     -- from
-    --     FinanceDB.dbo.SalesOrder so 
+    --     FinanceDB.dbo.SalesOrder so
     --     inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = [dd.datekey]
-    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID 
-    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID 
+    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
+    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
     --     inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
     --     inner join FinanceDB.dbo.Promotiom pm on sli.PromotionID = pm.PromotionID
     --     inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
@@ -482,72 +484,6 @@ exec fact_insert_into;
 go  
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    insert into #FactOrder
-        (
-            [dateKey],
-            salespersonKey,
-            saleslocationKey,
-            SalesYear,
-            KPI
-        )
-    select
-            [dateKey],
-            fo1.SalesPersonID,
-            RegionID,
-            SalesYear,
-            KPI
-    from
-        (
-            select
-                sp.SalesPersonID,
-                RegionID,
-                SalesYear,
-                KPI
-            from FinanceDB.dbo.SalesPerson sp
-                inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
-        ) fo1
-        inner join
-        (
-            select
-                sp.SalesPersonID,
-                RegionID,
-                PromotionID,
-                ProductID,
-                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SalesOrderDate,
-                so.SalesOrderID,
-                SalesOrderLineItemID,
-                SalesOrderNumber
-            from FinanceDB.dbo.SalesPerson sp
-                inner join FinanceDB.dbo.SalesRegion sr on sp.SalesPersonID = sr.SalesPersonID
-                inner join FinanceDB.dbo.SalesOrder so on sp.SalesPersonID = so.SalesPersonID
-                inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        ) fo2
-    on fo1.SalesPersonID = fo2.SalesPersonID
-        and SalesYear = left(SalesOrderDate, 4)
-    order by
-        SalesOrderDate desc,
-        fo1.SalesPersonID,
-        RegionID,
-        ProductID;
-
-
-
 
 
 
