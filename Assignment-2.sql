@@ -404,20 +404,29 @@ begin
             [dateKey],
             salespersonKey,
             saleslocationKey,
-            SalesYear,
-            KPI
+            promductKey,
+            promotionKey,
+            SalesOrderID,
+            SalesOrderLineItemID,
+            SalesOrderLineNumber,
+            UnitsSold,
+            SalePrice,
+            ManufacturingProce,
+            RRP,
+            Discount
         )
     select
         convert(varchar(10), SalesOrderDate, 111) as SalesOrderDate,
         pm.ProductID,
         pm.PromotionID,
         RegionID,
+        SalesOrderID,
+        SalesOrderLineItemID,
         SalesOrderLineNumber,
         UnitsSold,
         SalePrice,
         ManufacturingPrice,
         RRP,
-        PromotionYear,
         Discount
     from SalesRegion sr
         inner join SalesOrder so on sr.SalesRegionID = so.SalesRegionID
