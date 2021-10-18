@@ -83,7 +83,6 @@ begin
         Discount float,
         ManufacturingPrice float, 
         RRP float
-
     );
 
     create table DimSalesLocation
@@ -112,27 +111,28 @@ begin
     create table FactSalePerformance
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
-        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
-        SalesYear int,
-        KPI float
+        SalesPersonID smallint foreign key references DimSalesPerson(SalesPersonID),
+        RegionID smallint foreign key references DimSalesLocation(RegionID),
+        TotalYearSales_byRegion float,
+        TotalYearSalesKPI_byRegion float,
+        YearPerformance int,
+        MonthPerformance int,
+        SP_RankPerformance int
     );
 
     create table FactSaleOrder
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
-        productKey int foreign key references DimProduct(productKey),
-        promotionKey int foreign key references DimPromotion(promotionKey),
-        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
+        SalesPersonID smallint foreign key references DimSalesPerson(SalesPersonID),
+        RegionID smallint foreign key references DimSalesLocation(RegionID),
+        ProductID tinyint foreign key references DimProduct(ProductID),
         SalesOrderID bigint,
-        SalesOrderLineItemID bigint,
-        SalesOrderLineNumber varchar(10),
         UnitsSold smallint,
         SalePrice float,
-        ManufacturingPrice float,
-        RRP float,
-        Discount float
+        TotalYearProductSales int,
+        TotalYearPromotionSales int,
+        PromotionRate int,
+        TotalMonthSales float
     );
 
 end;
