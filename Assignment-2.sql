@@ -388,36 +388,36 @@ begin
             PromotionRate,
             TotalMonthSales 
         )
-    select
-        [dateKey],
-        salespersonKey,
-        saleslocationKey,
-        productKey,
-        promotionKey,
-        so.SalesOrderID,
-        SalesOrderLineItemID,
-        SalesOrderLineNumber,
-        UnitsSold,
-        SalePrice,
-        ManufacturingPrice,
-        RRP,
-        Discount
-    from
-        FinanceDB.dbo.SalesOrder so
-        inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = dd.[datekey]
-        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
-        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
-        inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-        inner join FinanceDB.dbo.Promotion pm on sli.PromotionID = pm.PromotionID
-        inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
-        inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
-        inner join staging_FinanceDW.dbo.DimProduct dp on dp.ProductID = p.ProductID
-        inner join staging_FinanceDW.dbo.DimPromotion dm on pm.PromotionID = dm.PromotionID
-    order by
-        [dateKey],
-        salespersonKey,
-        saleslocationKey,
-        productKey;
+    -- select
+    --     [dateKey],
+    --     salespersonKey,
+    --     saleslocationKey,
+    --     productKey,
+    --     promotionKey,
+    --     so.SalesOrderID,
+    --     SalesOrderLineItemID,
+    --     SalesOrderLineNumber,
+    --     UnitsSold,
+    --     SalePrice,
+    --     ManufacturingPrice,
+    --     RRP,
+    --     Discount
+    -- from
+    --     FinanceDB.dbo.SalesOrder so
+    --     inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = dd.[datekey]
+    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
+    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
+    --     inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
+    --     inner join FinanceDB.dbo.Promotion pm on sli.PromotionID = pm.PromotionID
+    --     inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
+    --     inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
+    --     inner join staging_FinanceDW.dbo.DimProduct dp on dp.ProductID = p.ProductID
+    --     inner join staging_FinanceDW.dbo.DimPromotion dm on pm.PromotionID = dm.PromotionID
+    -- order by
+    --     [dateKey],
+    --     salespersonKey,
+    --     saleslocationKey,
+    --     productKey;
 
 end;
 go
