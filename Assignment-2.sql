@@ -162,10 +162,10 @@ declare @DateCalendarStart  datetime,
 set @DateCalendarStart = '2005-01-01';
 set @DateCalendarEnd = '2021-12-31';
  
--- Set this to the number of months to add or extract to the current date to get the beginning
--- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
--- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
--- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
+        -- Set this to the number of months to add or extract to the current date to get the beginning
+        -- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
+        -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
+        -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
 
 set @FiscalMonthOffset = 0;
  
