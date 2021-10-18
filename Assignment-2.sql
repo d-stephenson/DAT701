@@ -248,40 +248,40 @@ begin
     insert into staging_FinanceDW.dbo.DimProduct
         (
             ProductID,    
-            ProductName
+            ProductName,
+            PromotionYear,
+            Discount,
+            ManufacturingPrice,
+            RRP
         )
     select
         ProductID,
-        ProductName
-    from FinanceDB.dbo.Product;
-
-    -- DimPromotion
-    insert into staging_FinanceDW.dbo.DimPromotion
-        (
-            PromotionID,
-            PromotionYear
-        )
-    select  
-        PromotionID,
-        PromotionYear
-    from FinanceDB.dbo.Promotion;
+        ProductName,
+        PromotionYear,
+        Discount,
+        ManufacturingPrice,
+        RRP
+    from FinanceDB.dbo.Product p
+        inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
+        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pc.ProductID;
 
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
         (
-            SalesRegionID,
-            r.RegionID,
+            RegionID,
+            CountryID,
+            SegmentID,
             CountryName,
             SegmentName
         )
     select
-        SalesRegionID,
-        r.RegionID,
+        RegionID,
+        CountryID,
+        SegmentID,
         CountryName,
         SegmentName
     from FinanceDB.dbo.Country c
         inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
-        inner join FinanceDB.dbo.SalesRegion sr on r.RegionID = sr.RegionID
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
 
     -- DimSalesPerson
@@ -294,7 +294,9 @@ begin
             HireDate,
             DayOfBirth,
             DaysOfLeave,
-            DaysOfSickLeave
+            DaysOfSickLeave,
+            SalesYear,
+            KPI
         )
     select
         SalesPersonID,
@@ -304,8 +306,11 @@ begin
         HireDate,
         DayOfBirth,
         DaysOfLeave,
-        DaysOfSickLeave
-    from FinanceDB.dbo.SalesPerson;
+        DaysOfSickLeave,
+        SalesYear,
+        KPI
+    from FinanceDB.dbo.SalesPerson sp
+        inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID;
 
 end;
 go
