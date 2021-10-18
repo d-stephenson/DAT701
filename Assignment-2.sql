@@ -348,44 +348,45 @@ begin
     insert into FactSalesRepPerformance
         (
             [dateKey],
-            salespersonKey,
-            saleslocationKey,
-            SalesYear,
-            KPI
+            SalesPersonID,
+            RegionID,
+            TotalYearSales_byRegion,
+            TotalYearSalesKPI_byRegion,
+            YearPerformance,
+            MonthPerformance,
+            SP_RankPerformance 
         )
-    select
-        [dateKey],
-        salespersonKey,
-        saleslocationKey,
-        SalesYear,
-        KPI
-    from
-        staging_FinanceDW.dbo.DimDate dd
-        inner join FinanceDB.dbo.SalesKPI sk on left(dd.[datekey], 4) = sk.SalesYear
-        inner join staging_FinanceDW.dbo.DimSalesPerson dsp on sk.SalesPersonID = dsp.SalesPersonID
-        inner join FinanceDB.dbo.SalesRegion sr on sk.SalesPersonID = sr.SalesPersonID
-        inner join staging_FinanceDW.dbo.DimSalesLocation dsl on sr.SalesRegionID = dsl.SalesRegionID
-    order by
-        [dateKey],
-        salespersonKey,
-        saleslocationKey;
+    -- select
+    --     [dateKey],
+    --     salespersonKey,
+    --     saleslocationKey,
+    --     SalesYear,
+    --     KPI
+    -- from
+    --     staging_FinanceDW.dbo.DimDate dd
+    --     inner join FinanceDB.dbo.SalesKPI sk on left(dd.[datekey], 4) = sk.SalesYear
+    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on sk.SalesPersonID = dsp.SalesPersonID
+    --     inner join FinanceDB.dbo.SalesRegion sr on sk.SalesPersonID = sr.SalesPersonID
+    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on sr.SalesRegionID = dsl.SalesRegionID
+    -- order by
+    --     [dateKey],
+    --     salespersonKey,
+    --     saleslocationKey;
 
     -- Fact_SalesOrder
     insert into FactSalesOrder
         (
             [dateKey],
-            salespersonKey,
-            saleslocationKey,
-            productKey,
-            promotionKey,
+            SalesPersonID,
+            RegionID,
+            ProductID,
             SalesOrderID,
-            SalesOrderLineItemID,
-            SalesOrderLineNumber,
             UnitsSold,
             SalePrice,
-            ManufacturingPrice,
-            RRP,
-            Discount
+            TotalYearProductSales,
+            TotalYearPromotionSales,
+            PromotionRate,
+            TotalMonthSales 
         )
     select
         [dateKey],
@@ -417,40 +418,6 @@ begin
         salespersonKey,
         saleslocationKey,
         productKey;
-
-    -- Fact_Calculatioms
-    -- insert into FactCalculations
-    --     (
-    --         [dateKey],
-    --         salespersonKey,
-    --         saleslocationKey,
-    --         productKey,
-    --         promotionKey,
-    --         TotalSale    
-    --     )
-    -- select
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey,
-    --     productKey,
-    --     promotionKey,
-    --     TotalSale
-    -- from
-    --     FinanceDB.dbo.SalesOrder so
-    --     inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = [dd.datekey]
-    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
-    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
-    --     inner join SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-    --     inner join FinanceDB.dbo.Promotiom pm on sli.PromotionID = pm.PromotionID
-    --     inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
-    --     inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
-    --     inner join staging_FinanceDW.dbo.DimProduct dp on dp.ProductID = p.ProductID
-    --     inner join staging_FinanceDW.dbo.DimPromotion dm on dp.PromotionID = p.PromotionID
-    -- order by
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey,
-    --     productKey;
 
 end;
 go
