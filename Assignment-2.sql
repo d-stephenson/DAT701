@@ -38,9 +38,8 @@ create procedure create_tables
 as
 begin
       
-    drop table if exists FactAggregatedValues;
-    drop table if exists FactSalesRepPerformance;
-    drop table if exists FactSalesOrder;
+    drop table if exists FactSalesPerformance;
+    drop table if exists FactSaleOrder;
     drop table if exists DimDate;
     drop table if exists DimProduct;
     drop table if exists DimPromotion;
@@ -79,41 +78,39 @@ begin
     
     create table DimProduct
     (
-        productKey int identity primary key,
-        ProductID tinyint,
-        ProductName varchar(24)
-    );
+        ProductID tinyint primary key,
+        ProductName varchar(24),
+        PromotionYear int,
+        Discount float,
+        ManufacturingPrice float, 
+        RRP float
 
-    create table DimPromotion
-    (
-        promotionKey int identity primary key,
-        PromotionID smallint,
-        PromotionYear int
     );
 
     create table DimSalesLocation
     (
-        saleslocationKey int identity primary key,
-        SalesRegionID smallint,
-        RegionID smallint,
+        RegionID smallint primary key,
+        CountryID tinyint,
+        SegmentID tinyint,
         CountryName varchar(56),
         SegmentName varchar(48)
     );
 
     create table DimSalesPerson
     (
-        salespersonKey int identity primary key,
-        SalesPersonID smallint,
+        SalesPersonID smallint primary key,
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
         HireDate date,
         DayOfBirth date,
         DaysOfLeave int,
-        DaysOfSickLeave int
+        DaysOfSickLeave int,
+        SalesYear int,
+        KPI float
     );
 
-    create table FactSalesRepPerformance
+    create table FactSalePerformance
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         salespersonKey int foreign key references DimSalesPerson(salespersonKey),
@@ -122,7 +119,7 @@ begin
         KPI float
     );
 
-    create table FactSalesOrder
+    create table FactSaleOrder
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
         salespersonKey int foreign key references DimSalesPerson(salespersonKey),
@@ -139,28 +136,6 @@ begin
         Discount float
     );
 
-    create table FactAggregatedValues
-    (
-        [dateKey] int not null foreign key references DimDate([dateKey]),
-        salespersonKey int foreign key references DimSalesPerson(salespersonKey),
-        productKey int foreign key references DimProduct(productKey),
-        promotionKey int foreign key references DimPromotion(promotionKey),
-        saleslocationKey int foreign key references DimSalesLocation(saleslocationKey),
-        TotalSale float,
-        GrossProfit float,
-        TotalYearlyKPI float,
-        AnnualPerformance float,
-        SalesRepRank int,
-        GrossProfitRank int,
-        TotalProductSales int,
-        TotalPromotionalSales int,
-        PromotionRate int,
-        TotalItems int,
-        Margin int,
-        PercentageDiscount int,
-        TotalRRP float,
-        UniqueItems int
-    );
 end;
 go
 
