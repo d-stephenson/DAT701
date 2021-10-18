@@ -38,11 +38,10 @@ create procedure create_tables
 as
 begin
       
-    drop table if exists FactSalesPerformance;
+    drop table if exists FactSalePerformance;
     drop table if exists FactSaleOrder;
     drop table if exists DimDate;
     drop table if exists DimProduct;
-    drop table if exists DimPromotion;
     drop table if exists DimSalesLocation;
     drop table if exists DimSalesPerson;
     
