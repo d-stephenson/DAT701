@@ -77,11 +77,12 @@ begin
     
     create table DimProduct
     (
-        ProductID tinyint primary key,
+        product_key int identity primary key,
+        ProductID tinyint,
         ProductName varchar(24),
         PromotionYear int,
         Discount float,
-        ManufacturingPrice float, 
+        ManufacturingPrice float,
         RRP float
     );
 
@@ -96,7 +97,8 @@ begin
 
     create table DimSalesPerson
     (
-        SalesPersonID smallint primary key,
+        salesperson_key int identity primary key,
+        SalesPersonID smallint,
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
@@ -111,7 +113,7 @@ begin
     create table FactSalePerformance
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        SalesPersonID smallint foreign key references DimSalesPerson(SalesPersonID),
+        salesperson_key int foreign key references DimSalesPerson(salesperson_key),
         RegionID smallint foreign key references DimSalesLocation(RegionID),
         TotalYearSales_byRegion float,
         TotalYearSalesKPI_byRegion float,
@@ -123,9 +125,9 @@ begin
     create table FactSaleOrder
     (
         [dateKey] int not null foreign key references DimDate([dateKey]),
-        SalesPersonID smallint foreign key references DimSalesPerson(SalesPersonID),
+        salesperson_key int foreign key references DimSalesPerson(salesperson_key),
         RegionID smallint foreign key references DimSalesLocation(RegionID),
-        ProductID tinyint foreign key references DimProduct(ProductID),
+        product_key int foreign key references DimProduct(product_key),
         SalesOrderID bigint,
         UnitsSold smallint,
         SalePrice float,
@@ -256,15 +258,15 @@ begin
             RRP
         )
     select
-        ProductID,
+        p.ProductID,
         ProductName,
         PromotionYear,
         Discount,
         ManufacturingPrice,
         RRP
-    from FinanceDB.dbo.Product p
-        inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
-        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pc.ProductID;
+    from FinanceDB.dbo.ProductCost pc
+        inner join FinanceDB.dbo.Product p on pc.ProductID = p.ProductID
+        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
 
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
@@ -277,14 +279,14 @@ begin
         )
     select
         RegionID,
-        CountryID,
-        SegmentID,
+        c.CountryID,
+        s.SegmentID,
         CountryName,
         SegmentName
-    from FinanceDB.dbo.Country c
-        inner join FinanceDB.dbo.Region r on c.CountryID = r.CountryID
+    from FinanceDB.dbo.Region r  
+        inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
-
+        
     -- DimSalesPerson
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
@@ -300,7 +302,7 @@ begin
             KPI
         )
     select
-        SalesPersonID,
+        sp.SalesPersonID,
         FirstName,
         LastName,
         Gender,
@@ -349,34 +351,34 @@ begin
     insert into FactSalesRepPerformance
         (
             [dateKey],
-            SalesPersonID,
+            salesperson_key,
             RegionID,
             TotalYearSales_byRegion,
             TotalYearSalesKPI_byRegion,
             YearPerformance,
             MonthPerformance,
-            SP_RankPerformance 
+            SP_RankPerformance
         )
     select
         year(SalesOrderDate),
-        SalesPersonID,
-        RegionID,
+        sr.SalesPersonID,
+        r.RegionID,
         round(sum(SalePrice), 2),
         sum(KPI),
-        round(sum((SalePrice / KPI) * 100), 2),
-        round(sum((SalePrice / KPI) * 100), 2) / 12,
-        dense_rank() over (order by round(sum(SalePrice), 2))
-    from SalesOrderLineItem li
-        inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
-        inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
-        inner join Region r on sr.RegionID = r.RegionID
-        inner join Segment s on r.SegmentID = s.SegmentID
-        inner join Country c on r.CountryID = c.CountryID
-        inner join ProductCost pc on c.CountryID = pc.CountryID
+        round(sum((SalePrice / KPI) * 100), 2)
+    from FinanceDB.dbo.SalesOrderLineItem li
+        inner join FinanceDB.dbo.SalesOrder so on li.SalesOrderID = so.SalesOrderID
+        inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+        inner join FinanceDB.dbo.Region r on sr.RegionID = r.RegionID
+        inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID
+        inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
+        inner join FinanceDB.dbo.ProductCost pc on c.CountryID = pc.CountryID
+        inner join FinanceDB.dbo.SalesPerson sp on sr.SalesPersonID = sp.SalesPersonID
+        inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
     group by
-        [dateKey],
-        SalesPersonID,        
-        RegionID
+        year(SalesOrderDate),
+        sr.SalesPersonID,
+        r.RegionID
     order by
         [dateKey],
         SalesPersonID,        
@@ -396,7 +398,7 @@ begin
             TotalYearProductSales,
             TotalYearPromotionSales,
             PromotionRate,
-            TotalMonthSales 
+            TotalMonthSales
         )
     -- select
     --     [dateKey],
@@ -440,3 +442,7 @@ exec fact_insert_into;
 go  
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
