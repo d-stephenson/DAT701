@@ -129,6 +129,7 @@ begin
         SalesOrderID bigint,
         UnitsSold smallint,
         SalePrice float,
+        GrossProfit float,
         TotalYearProductSales int,
         TotalYearPromotionSales int,
         PromotionRate int,
@@ -356,22 +357,30 @@ begin
             MonthPerformance,
             SP_RankPerformance 
         )
-    -- select
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey,
-    --     SalesYear,
-    --     KPI
-    -- from
-    --     staging_FinanceDW.dbo.DimDate dd
-    --     inner join FinanceDB.dbo.SalesKPI sk on left(dd.[datekey], 4) = sk.SalesYear
-    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on sk.SalesPersonID = dsp.SalesPersonID
-    --     inner join FinanceDB.dbo.SalesRegion sr on sk.SalesPersonID = sr.SalesPersonID
-    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on sr.SalesRegionID = dsl.SalesRegionID
-    -- order by
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey;
+    select
+        year(SalesOrderDate),
+        SalesPersonID,
+        RegionID,
+        round(sum(SalePrice), 2),
+        sum(KPI),
+        round(sum((SalePrice / KPI) * 100), 2),
+        round(sum((SalePrice / KPI) * 100), 2) / 12,
+        dense_rank() over (order by round(sum(SalePrice), 2))
+    from SalesOrderLineItem li
+        inner join SalesOrder so on li.SalesOrderID = so.SalesOrderID
+        inner join SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+        inner join Region r on sr.RegionID = r.RegionID
+        inner join Segment s on r.SegmentID = s.SegmentID
+        inner join Country c on r.CountryID = c.CountryID
+        inner join ProductCost pc on c.CountryID = pc.CountryID
+    group by
+        [dateKey],
+        SalesPersonID,        
+        RegionID
+    order by
+        [dateKey],
+        SalesPersonID,        
+        RegionID;
 
     -- Fact_SalesOrder
     insert into FactSalesOrder
@@ -383,6 +392,7 @@ begin
             SalesOrderID,
             UnitsSold,
             SalePrice,
+            GrossProfit,         round(sum(SalePrice - ManufacturingPrice), 2),
             TotalYearProductSales,
             TotalYearPromotionSales,
             PromotionRate,
