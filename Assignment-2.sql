@@ -99,6 +99,7 @@ begin
     (
         salesperson_key int identity primary key,
         SalesPersonID smallint,
+        FullName varchar(100),
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
@@ -284,6 +285,7 @@ begin
     insert into staging_FinanceDW.dbo.DimSalesPerson
         (
             SalesPersonID,
+            FullName, 
             FirstName,
             LastName,
             Gender,
@@ -296,6 +298,7 @@ begin
         )
     select
         sp.SalesPersonID,
+        concat(FirstName, ' ', LastName),
         FirstName,
         LastName,
         Gender,
