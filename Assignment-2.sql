@@ -117,9 +117,7 @@ begin
         RegionID smallint foreign key references DimSalesLocation(RegionID),
         TotalYearSales_byRegion float,
         TotalYearSalesKPI_byRegion float,
-        YearPerformance int,
-        MonthPerformance int,
-        SP_RankPerformance int
+        YearPerformance int
     );
 
     create table FactSaleOrder
@@ -152,91 +150,6 @@ go
 
 -- DML Inserting into tables
 
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Insert into DimDate table
--- https://gist.github.com/sfrechette/0be7716d98d8aa107e64
-
-declare @DateCalendarStart  datetime,
-        @DateCalendarEnd    datetime,
-        @FiscalCounter      datetime,
-        @FiscalMonthOffset  int;
- 
-set @DateCalendarStart = '2005-01-01';
-set @DateCalendarEnd = '2021-12-31';
- 
-        -- Set this to the number of months to add or extract to the current date to get the beginning
-        -- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
-        -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
-        -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
-
-set @FiscalMonthOffset = 0;
- 
-with DateDimension  
-as
-(
-    select  @DateCalendarStart as DateCalendarValue,
-            dateadd(m, @FiscalMonthOffset, @DateCalendarStart) as FiscalCounter
-                 
-    union all
-     
-    select  DateCalendarValue + 1,
-            dateadd(m, @FiscalMonthOffset, (DateCalendarValue + 1)) as FiscalCounter
-    from    DateDimension
-    where   DateCalendarValue + 1 < = @DateCalendarEnd
-)
- 
-insert into dbo.DimDate (DateKey, FullDate, DayNumberOfWeek, DayNameOfWeek, WeekDayType,
-                        DayNumberOfMonth, DayNumberOfYear, WeekNumberOfYear, MonthNameOfYear,
-                        MonthNumberOfYear, QuarterNumberCalendar, QuarterNameCalendar, SemesterNumberCalendar,
-                        SemesterNameCalendar, YearCalendar, MonthNumberFiscal, QuarterNumberFiscal,
-                        QuarterNameFiscal, SemesterNumberFiscal, SemesterNameFiscal, YearFiscal)
- 
-select  cast(convert(varchar(25), DateCalendarValue, 112) as int) as 'DateKey',
-        cast(DateCalendarValue as date) as 'FullDate',
-        datepart(weekday, DateCalendarValue) as 'DayNumberOfWeek',
-        datename(weekday, DateCalendarValue) as 'DayNameOfWeek',
-        case datename(dw, DateCalendarValue)
-            when 'Saturday' then 'Weekend'
-            when 'Sunday' then 'Weekend'
-        else 'Weekday'
-        end as 'WeekDayType',
-        datepart(day, DateCalendarValue) as'DayNumberOfMonth',
-        datepart(dayofyear, DateCalendarValue) as 'DayNumberOfYear',
-        datepart(week, DateCalendarValue) as 'WeekNumberOfYear',
-        datename(month, DateCalendarValue) as 'MonthNameOfYear',
-        datepart(month, DateCalendarValue) as 'MonthNumberOfYear',
-        datepart(quarter, DateCalendarValue) as 'QuarterNumberCalendar',
-        'Q' + cast(datepart(quarter, DateCalendarValue) as nvarchar) as 'QuarterNameCalendar',
-        case
-            when datepart(month, DateCalendarValue) <= 6 then 1
-            when datepart(month, DateCalendarValue) > 6 then 2
-        end as 'SemesterNumberCalendar',
-        case
-            when datepart(month, DateCalendarValue) < = 6 then 'First Semester'
-            when datepart(month, DateCalendarValue) > 6 then 'Second Semester'
-        end as 'SemesterNameCalendar',
-        datepart(year, DateCalendarValue) as 'YearCalendar',
-        datepart(month, FiscalCounter) as 'MonthNumberFiscal',
-        datepart(quarter, FiscalCounter) as 'QuarterNumberFiscal',
-        'Q' + cast(datepart(quarter, FiscalCounter) as nvarchar) as 'QuarterNameFiscal',  
-        case
-            when datepart(month, FiscalCounter) < = 6 then 1
-            when datepart(month, FiscalCounter) > 6 then 2
-        end as 'SemesterNumberFiscal',  
-        case
-            when datepart(month, FiscalCounter) < = 6 then 'First Semester'
-            when  datepart(month, FiscalCounter) > 6 then 'Second Semester'
-        end as 'SemesterNameFiscal',            
-        datepart(year, FiscalCounter) as 'YearFiscal'
-from    DateDimension
-order by
-        DateCalendarValue
-option (maxrecursion 0);
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 -- Insert Into dimension tables procedure
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
 
@@ -247,7 +160,87 @@ create procedure dim_insert_into
 as
 begin
 
-    -- from DimProduct
+    -- DimDate
+    -- https://gist.github.com/sfrechette/0be7716d98d8aa107e64
+
+    declare @DateCalendarStart  datetime,
+            @DateCalendarEnd    datetime,
+            @FiscalCounter      datetime,
+            @FiscalMonthOffset  int;
+ 
+    set @DateCalendarStart = '2000-01-01';
+    set @DateCalendarEnd = '2021-12-31';
+ 
+            -- Set this to the number of months to add or extract to the current date to get the beginning
+            -- of the Fiscal Year. Example: If the Fiscal Year begins July 1, assign the value of 6
+            -- to the @FiscalMonthOffset variable. Negative values are also allowed, thus if your
+            -- 2012 Fiscal Year begins in July of 2011, assign a value of -6.
+
+    set @FiscalMonthOffset = 0;
+ 
+    with DateDimension  
+    as
+    (
+        select  @DateCalendarStart as DateCalendarValue,
+                dateadd(m, @FiscalMonthOffset, @DateCalendarStart) as FiscalCounter
+                 
+        union all
+     
+        select  DateCalendarValue + 1,
+                dateadd(m, @FiscalMonthOffset, (DateCalendarValue + 1)) as FiscalCounter
+        from    DateDimension
+        where   DateCalendarValue + 1 < = @DateCalendarEnd
+    )
+ 
+    insert into dbo.DimDate (DateKey, FullDate, DayNumberOfWeek, DayNameOfWeek, WeekDayType,
+                            DayNumberOfMonth, DayNumberOfYear, WeekNumberOfYear, MonthNameOfYear,
+                            MonthNumberOfYear, QuarterNumberCalendar, QuarterNameCalendar, SemesterNumberCalendar,
+                            SemesterNameCalendar, YearCalendar, MonthNumberFiscal, QuarterNumberFiscal,
+                            QuarterNameFiscal, SemesterNumberFiscal, SemesterNameFiscal, YearFiscal)
+ 
+    select  cast(convert(varchar(25), DateCalendarValue, 112) as int) as 'DateKey',
+            cast(DateCalendarValue as date) as 'FullDate',
+            datepart(weekday, DateCalendarValue) as 'DayNumberOfWeek',
+            datename(weekday, DateCalendarValue) as 'DayNameOfWeek',
+            case datename(dw, DateCalendarValue)
+                when 'Saturday' then 'Weekend'
+                when 'Sunday' then 'Weekend'
+            else 'Weekday'
+            end as 'WeekDayType',
+            datepart(day, DateCalendarValue) as'DayNumberOfMonth',
+            datepart(dayofyear, DateCalendarValue) as 'DayNumberOfYear',
+            datepart(week, DateCalendarValue) as 'WeekNumberOfYear',
+            datename(month, DateCalendarValue) as 'MonthNameOfYear',
+            datepart(month, DateCalendarValue) as 'MonthNumberOfYear',
+            datepart(quarter, DateCalendarValue) as 'QuarterNumberCalendar',
+            'Q' + cast(datepart(quarter, DateCalendarValue) as nvarchar) as 'QuarterNameCalendar',
+            case
+                when datepart(month, DateCalendarValue) <= 6 then 1
+                when datepart(month, DateCalendarValue) > 6 then 2
+            end as 'SemesterNumberCalendar',
+            case
+                when datepart(month, DateCalendarValue) < = 6 then 'First Semester'
+                when datepart(month, DateCalendarValue) > 6 then 'Second Semester'
+            end as 'SemesterNameCalendar',
+            datepart(year, DateCalendarValue) as 'YearCalendar',
+            datepart(month, FiscalCounter) as 'MonthNumberFiscal',
+            datepart(quarter, FiscalCounter) as 'QuarterNumberFiscal',
+            'Q' + cast(datepart(quarter, FiscalCounter) as nvarchar) as 'QuarterNameFiscal',  
+            case
+                when datepart(month, FiscalCounter) < = 6 then 1
+                when datepart(month, FiscalCounter) > 6 then 2
+            end as 'SemesterNumberFiscal',  
+            case
+                when datepart(month, FiscalCounter) < = 6 then 'First Semester'
+                when  datepart(month, FiscalCounter) > 6 then 'Second Semester'
+            end as 'SemesterNameFiscal',            
+            datepart(year, FiscalCounter) as 'YearFiscal'
+    from    DateDimension
+    order by
+            DateCalendarValue
+    option (maxrecursion 0);
+
+    -- DimProduct
     insert into staging_FinanceDW.dbo.DimProduct
         (
             ProductID,    
@@ -348,19 +341,17 @@ as
 begin
 
     -- Fact_SalesRepPerformance
-    insert into FactSalesRepPerformance
+    insert into FactSalePerformance
         (
-            [dateKey],
+            dateKey,
             salesperson_key,
             RegionID,
             TotalYearSales_byRegion,
             TotalYearSalesKPI_byRegion,
-            YearPerformance,
-            MonthPerformance,
-            SP_RankPerformance
+            YearPerformance
         )
     select
-        year(SalesOrderDate),
+        convert(int, convert(varchar(8), SalesOrderDate, 112)),
         sr.SalesPersonID,
         r.RegionID,
         round(sum(SalePrice), 2),
@@ -376,14 +367,14 @@ begin
         inner join FinanceDB.dbo.SalesPerson sp on sr.SalesPersonID = sp.SalesPersonID
         inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID
     group by
-        year(SalesOrderDate),
+        convert(int, convert(varchar(8), SalesOrderDate, 112)),
         sr.SalesPersonID,
         r.RegionID
     order by
-        [dateKey],
+        convert(int, convert(varchar(8), SalesOrderDate, 112)),
         SalesPersonID,        
         RegionID;
-
+        
     -- Fact_SalesOrder
     insert into FactSalesOrder
         (
