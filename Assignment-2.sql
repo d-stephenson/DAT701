@@ -357,14 +357,12 @@ begin
         convert(int, convert(varchar(8), SalesOrderDate, 112)),
         sr.SalesPersonID,
         r.RegionID,
-        round(sum(SalePrice), 2),
         sum(KPI),
         round(sum((SalePrice / KPI) * 100), 2)
     from FinanceDB.dbo.SalesOrderLineItem li
         inner join FinanceDB.dbo.SalesOrder so on li.SalesOrderID = so.SalesOrderID
         inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
         inner join FinanceDB.dbo.Region r on sr.RegionID = r.RegionID
-        inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID
         inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
         inner join FinanceDB.dbo.ProductCost pc on c.CountryID = pc.CountryID
         inner join FinanceDB.dbo.SalesPerson sp on sr.SalesPersonID = sp.SalesPersonID
