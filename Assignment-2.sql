@@ -77,7 +77,6 @@ begin
     
     create table DimProduct
     (
-        product_key int identity primary key,
         ProductID tinyint,
         ProductName varchar(24),
         PromotionYear int,
@@ -97,7 +96,6 @@ begin
 
     create table DimSalesPerson
     (
-        salesperson_key int identity primary key,
         SalesPersonID smallint,
         FullName varchar(100),
         FirstName varchar(64),
@@ -113,7 +111,7 @@ begin
 
     create table FactSalePerformance
     (
-        [dateKey] int not null foreign key references DimDate([dateKey]),
+        DateKey int not null foreign key references DimDate([dateKey]),
         salesperson_key int foreign key references DimSalesPerson(salesperson_key),
         RegionID smallint foreign key references DimSalesLocation(RegionID),
         TotalYearSales_byRegion float,
@@ -123,7 +121,7 @@ begin
 
     create table FactSaleOrder
     (
-        [dateKey] int not null foreign key references DimDate([dateKey]),
+        DateKey int not null foreign key references DimDate([dateKey]),
         salesperson_key int foreign key references DimSalesPerson(salesperson_key),
         RegionID smallint foreign key references DimSalesLocation(RegionID),
         product_key int foreign key references DimProduct(product_key),
