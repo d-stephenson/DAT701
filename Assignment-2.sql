@@ -134,10 +134,15 @@ begin
         UnitsSold smallint,
         SalePrice float,
         GrossProfit float,
-        TotalYearProductSales int,
-        TotalYearPromotionSales int,
         PromotionRate int,
-        TotalMonthSales float
+        TotalMonthSales float,
+        PercentageDiscount int,
+        Margin float,
+        TotalSalesPrice_byOrder_SP_Month float,
+        TotalCost_byOrder_SP_Month float,
+        TotalRRP_byOrder_SP_Month float,
+        UniqueItems_byOrder_SP_Month int,
+        TotalItems_byOrder_SP_Month int
     );
 
 end;
