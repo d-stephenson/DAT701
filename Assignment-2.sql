@@ -87,7 +87,7 @@ begin
 
     create table DimSalesLocation
     (
-        RegionID smallint primary key,
+        RegionID smallint,
         CountryID tinyint,
         SegmentID tinyint,
         CountryName varchar(56),
@@ -115,8 +115,13 @@ begin
         salesperson_key int foreign key references DimSalesPerson(salesperson_key),
         RegionID smallint foreign key references DimSalesLocation(RegionID),
         TotalYearSales_byRegion float,
+        TotalYearKPI float,
         TotalYearSalesKPI_byRegion float,
-        YearPerformance int
+        YearPerformance int,
+        MonthPerformance int, 
+        SP_RankPerformance int,
+        TotalYearProductSales_byRegion_bySP float,
+        TotalTearPromotion_byRegion_bySP float
     );
 
     create table FactSaleOrder
