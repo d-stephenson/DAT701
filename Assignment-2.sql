@@ -1,35 +1,3 @@
--- DAT602 | Assignment 2
--- Data Warehouse
-
-use FinanceDB
-go
-
-exec sp_columns Country
-exec sp_columns Product
-exec sp_columns ProductCost
-exec sp_columns Promotion
-exec sp_columns Region
-exec sp_columns SalesKPI
-exec sp_columns SalesOrder
-exec sp_columns SalesOrderLineItem
-exec sp_columns SalesPerson
-exec sp_columns SalesRegion
-exec sp_columns Segment
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-create database staging_FinanceDW;
-go
-
-create database production_FinanceDW;
-go
-
-use staging_FinanceDW;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Create tables procedure
 
 drop procedure if exists create_tables
 go
@@ -45,6 +13,7 @@ begin
     drop table if exists DimSalesLocation;
     drop table if exists DimSalesPerson;
     
+    -- DimDate
     create table DimDate
     (
         DateKey                 int not null,
@@ -75,6 +44,7 @@ begin
         )
     )
     
+    -- DimProduct
     create table DimProduct
     (
         ProductID tinyint,
@@ -85,6 +55,15 @@ begin
         RRP float
     );
 
+    -- exec sp_helpindex 'DimProduct';
+
+    drop index if exists idx_product on DimProduct;
+
+    create clustered index idx_product
+        on DimProduct
+            (ProductID);
+
+    -- DimSalesLocation
     create table DimSalesLocation
     (
         RegionID smallint,
@@ -94,10 +73,18 @@ begin
         SegmentName varchar(48)
     );
 
+    -- exec sp_helpindex 'DimSalesLocation';
+
+    drop index if exists idx_saleslocation on DimSalesLocation;
+
+    create clustered index idx_saleslocation
+        on DimSalesLocation
+            (RegionID);
+
+    -- DimSalesPerson
     create table DimSalesPerson
     (
         SalesPersonID smallint,
-        FullName varchar(100),
         FirstName varchar(64),
         LastName varchar(64),
         Gender varchar(20),
@@ -109,6 +96,21 @@ begin
         KPI float
     );
 
+    -- exec sp_helpindex 'DimSalesPerson';
+
+    drop index if exists idx_salesperson on DimSalesPerson;
+
+    create clustered index idx_salesperson
+        on DimSalesPerson
+            (SalesPersonID);
+
+    drop index if exists idx_salespersonname on DimSalesPerson;
+
+    create nonclustered index idx_salespersonname
+        on DimSalesPerson
+            (FirstName, LastName);
+
+    -- FactSalesPerformance
     create table FactSalePerformance
     (
         DateKey int not null foreign key references DimDate([dateKey]),
@@ -118,11 +120,25 @@ begin
         TotalYearKPI float,
         TotalYearSalesKPI_byRegion float,
         YearPerformance int,
-        MonthPerformance int, 
+        MonthPerformance int,
         SP_RankPerformance int,
         TotalYearProductSales_byRegion_bySP float,
         TotalTearPromotion_byRegion_bySP float
     );
+
+    -- exec sp_helpindex 'FactSalePerformance';
+
+    drop index if exists idx_fsp_date on FactSalePerformance;
+
+    create clustered index idx_fsp_date
+        on FactSalePerformance
+            (DateKey);
+
+    drop index if exists idx_fsp_group on FactSalePerformance;
+
+    create nonclustered index idx_fsp_group
+        on FactSalePerformance
+            (SalesPersonID, RegionID);
 
     create table FactSaleOrder
     (
@@ -144,6 +160,20 @@ begin
         UniqueItems_byOrder_SP_Month int,
         TotalItems_byOrder_SP_Month int
     );
+
+    -- exec sp_helpindex 'FactSaleOrder';
+
+    drop index if exists idx_fsp_date on FactSaleOrder;
+
+    create clustered index idx_fso_date
+        on FactSaleOrder
+            (DateKey);
+
+    drop index if exists idx_fsp_group on FactSaleOrder;
+
+    create nonclustered index idx_fso_group
+        on FactSaleOrder
+            (SalesPersonID, RegionID, ProductID);
 
 end;
 go
