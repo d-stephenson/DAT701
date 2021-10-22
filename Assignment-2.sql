@@ -112,8 +112,8 @@ begin
     create table FactSalePerformance
     (
         DateKey int not null foreign key references DimDate([dateKey]),
-        salesperson_key int foreign key references DimSalesPerson(salesperson_key),
-        RegionID smallint foreign key references DimSalesLocation(RegionID),
+        SalesPersonID smallint,
+        RegionID smallint,
         TotalYearSales_byRegion float,
         TotalYearKPI float,
         TotalYearSalesKPI_byRegion float,
@@ -127,9 +127,9 @@ begin
     create table FactSaleOrder
     (
         DateKey int not null foreign key references DimDate([dateKey]),
-        salesperson_key int foreign key references DimSalesPerson(salesperson_key),
-        RegionID smallint foreign key references DimSalesLocation(RegionID),
-        product_key int foreign key references DimProduct(product_key),
+        SalesPersonID smallint,
+        RegionID smallint,
+        ProductID tinyint,
         SalesOrderID bigint,
         UnitsSold smallint,
         SalePrice float,
