@@ -160,12 +160,6 @@ begin
 
     -- exec sp_helpindex 'FactSalePerformance';
 
-    drop index if exists idx_fsp_date on FactSalePerformance;
-
-    create clustered index idx_fsp_date
-        on FactSalePerformance
-            (DateKey);
-
     drop index if exists idx_fsp_group on FactSalePerformance;
 
     create nonclustered index idx_fsp_group
@@ -215,7 +209,29 @@ go
 
 -- Create partitions
 
--- Partition on SalesOrderID at approx third of current order total
+-- Partition on datekey split into 4 five year intervals
+drop partition scheme SalesPerformanceScheme;
+drop partition function SP_Date;
+
+create partition function SP_Date (int)
+    as range right for values ('20010101', '20060101', '20110101', '20160101');
+go
+
+create partition scheme SalesPerformanceScheme
+    as partition SP_Date ALL TO ([primary]);
+go
+
+-- Create Partition on SalesOrderID
+drop index if exists idx_Fact_SP_Date on FactSalePerformance;
+go
+
+create clustered index idx_Fact_SP_Date on FactSalePerformance(DateKey)
+  with (statistics_norecompute = off, ignore_dup_key = off,
+        allow_row_locks = on, allow_page_locks = on)
+  on SalesPerformanceScheme(DateKey);
+go
+
+-- Partition on datekey split into4 five year intervals
 drop partition scheme SalesOrderScheme;
 drop partition function SO_Date;
 
