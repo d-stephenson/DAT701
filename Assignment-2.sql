@@ -210,47 +210,35 @@ go
 -- Create partitions
 
 -- Partition on datekey split into 4 five year intervals
-drop partition scheme SalesPerformanceScheme;
-drop partition function SP_Date;
+drop partition scheme DateScheme;
+drop partition function Key_Date;
 
-create partition function SP_Date (int)
+create partition function Key_Date (int)
     as range right for values ('20010101', '20060101', '20110101', '20160101');
 go
 
-create partition scheme SalesPerformanceScheme
-    as partition SP_Date ALL TO ([primary]);
+create partition scheme DateScheme
+    as partition Key_Date ALL TO ([primary]);
 go
 
--- Create Partition on SalesOrderID
+-- Create Partition on FactSalePerformance
 drop index if exists idx_Fact_SP_Date on FactSalePerformance;
 go
 
 create clustered index idx_Fact_SP_Date on FactSalePerformance(DateKey)
   with (statistics_norecompute = off, ignore_dup_key = off,
         allow_row_locks = on, allow_page_locks = on)
-  on SalesPerformanceScheme(DateKey);
+  on DateScheme(DateKey);
 go
 
--- Partition on datekey split into4 five year intervals
-drop partition scheme SalesOrderScheme;
-drop partition function SO_Date;
-
-create partition function SO_Date (int)
-    as range right for values ('20010101', '20060101', '20110101', '20160101');
-go
-
-create partition scheme SalesOrderScheme
-    as partition SO_Date ALL TO ([primary]);
-go
-
--- Create Partition on SalesOrderID
+-- Create Partition on FactSaleOrder
 drop index if exists idx_Fact_SO_Date on FactSaleOrder;
 go
 
 create clustered index idx_Fact_SO_Date on FactSaleOrder(DateKey)
   with (statistics_norecompute = off, ignore_dup_key = off,
         allow_row_locks = on, allow_page_locks = on)
-  on SalesOrderScheme(DateKey);
+  on DateScheme(DateKey);
 go
 
 -- View Partitions
