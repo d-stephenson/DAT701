@@ -1,3 +1,35 @@
+-- DAT602 | Assignment 2
+-- Data Warehouse
+
+use FinanceDB
+go
+
+exec sp_columns Country
+exec sp_columns Product
+exec sp_columns ProductCost
+exec sp_columns Promotion
+exec sp_columns Region
+exec sp_columns SalesKPI
+exec sp_columns SalesOrder
+exec sp_columns SalesOrderLineItem
+exec sp_columns SalesPerson
+exec sp_columns SalesRegion
+exec sp_columns Segment
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+create database staging_FinanceDW;
+go
+
+create database production_FinanceDW;
+go
+
+use staging_FinanceDW;
+go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Create tables procedure
 
 drop procedure if exists create_tables
 go
@@ -163,12 +195,6 @@ begin
 
     -- exec sp_helpindex 'FactSaleOrder';
 
-    drop index if exists idx_fsp_date on FactSaleOrder;
-
-    create clustered index idx_fso_date
-        on FactSaleOrder
-            (DateKey);
-
     drop index if exists idx_fsp_group on FactSaleOrder;
 
     create nonclustered index idx_fso_group
@@ -183,6 +209,56 @@ go
 -- Execute create tables procedure
 
 exec create_tables;
+go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Create partitions
+
+-- Partition on SalesOrderID at approx third of current order total
+drop partition scheme SalesOrderScheme;
+drop partition function SO_Date;
+
+create partition function SO_Date (int)
+    as range right for values ('20010101', '20060101', '20110101', '20160101');
+go
+
+create partition scheme SalesOrderScheme
+    as partition SO_Date ALL TO ([primary]);
+go
+
+-- Create Partition on SalesOrderID
+drop index if exists idx_Fact_SO_Date on FactSaleOrder;
+go
+
+create clustered index idx_Fact_SO_Date on FactSaleOrder(DateKey)
+  with (statistics_norecompute = off, ignore_dup_key = off,
+        allow_row_locks = on, allow_page_locks = on)
+  on SalesOrderScheme(DateKey);
+go
+
+-- View Partitions
+select
+    ps.name,
+    pf.name,
+    boundary_id,
+    value
+from sys.partition_schemes ps
+    inner join sys.partition_functions pf ON pf.function_id=ps.function_id
+    inner join sys.partition_range_values prf ON pf.function_id=prf.function_id;
+go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Create Recovery Model
+
+-- View recovery model
+select
+    name,
+    recovery_model_desc  
+from
+    sys.databases  
+where name = 'model';  
 go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
