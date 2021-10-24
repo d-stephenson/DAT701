@@ -401,7 +401,7 @@ begin
             DaysOfSickLeave
         )
     select
-        sp.SalesPersonID,
+        SalesPersonID,
         FirstName,
         LastName,
         Gender,
@@ -490,15 +490,15 @@ begin
         so.SalesPersonID
     )
     -- insert into staging_FinanceDW.dbo.FactSalePerformance
-        select top 5
+        select
             fsp_2.SalesYear,
             fsp_2.RegionID,
             fsp_2.SalesPersonID,
             fsp_1.TotalAnnualKPI,
             fsp_1.TotalMonthlyKPI,
             fsp_2.TotalSalesPrice,
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 2),
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100), 2)
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 8),
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100), 8)
         from fsp_1
             inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
                 and fsp_1.RegionID = fsp_2.RegionID
