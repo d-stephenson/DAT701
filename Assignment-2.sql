@@ -81,10 +81,7 @@ begin
     (
         ProductID tinyint,
         ProductName varchar(24),
-        PromotionYear int,
-        Discount float,
-        ManufacturingPrice float,
-        RRP float
+        PromotionYear int
     );
 
     -- exec sp_helpindex 'DimProduct';
@@ -123,9 +120,7 @@ begin
         HireDate date,
         DayOfBirth date,
         DaysOfLeave int,
-        DaysOfSickLeave int,
-        SalesYear int,
-        KPI float
+        DaysOfSickLeave int
     );
 
     -- exec sp_helpindex 'DimSalesPerson';
@@ -365,20 +360,13 @@ begin
         (
             ProductID,    
             ProductName,
-            PromotionYear,
-            Discount,
-            ManufacturingPrice,
-            RRP
+            PromotionYear
         )
     select
         p.ProductID,
         ProductName,
-        PromotionYear,
-        Discount,
-        ManufacturingPrice,
-        RRP
-    from FinanceDB.dbo.ProductCost pc
-        inner join FinanceDB.dbo.Product p on pc.ProductID = p.ProductID
+        PromotionYear
+    from FinanceDB.dbo.Product p
         inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
 
     -- DimSalesLocation
@@ -410,9 +398,7 @@ begin
             HireDate,
             DayOfBirth,
             DaysOfLeave,
-            DaysOfSickLeave,
-            SalesYear,
-            KPI
+            DaysOfSickLeave
         )
     select
         sp.SalesPersonID,
@@ -422,11 +408,8 @@ begin
         HireDate,
         DayOfBirth,
         DaysOfLeave,
-        DaysOfSickLeave,
-        SalesYear,
-        KPI
-    from FinanceDB.dbo.SalesPerson sp
-        inner join FinanceDB.dbo.SalesKPI sk on sp.SalesPersonID = sk.SalesPersonID;
+        DaysOfSickLeave
+    from FinanceDB.dbo.SalesPerson;
 
 end;
 go
@@ -514,8 +497,8 @@ begin
             fsp_1.TotalAnnualKPI,
             fsp_1.TotalMonthlyKPI,
             fsp_2.TotalSalesPrice,
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 5),
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100) / 12, 5)
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 2),
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100), 2)
         from fsp_1
             inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
                 and fsp_1.RegionID = fsp_2.RegionID
