@@ -495,51 +495,99 @@ begin
         RegionID;
         
     -- Fact_SalesOrder
-    insert into FactSalesOrder
-        (
-            [dateKey],
-            SalesPersonID,
+    with fso_1(
+            SaleYear,
             RegionID,
+            SalesPersonID,
             ProductID,
             SalesOrderID,
             UnitsSold,
-            SalePrice,
-            GrossProfit,         round(sum(SalePrice - ManufacturingPrice), 2),
-            TotalYearProductSales,
-            TotalYearPromotionSales,
-            PromotionRate,
-            TotalMonthSales
+            SalePrice
+            ) as
+        (
+        select
+            convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleYear,
+            sr.RegionID,
+            so.SalesPersonID,
+            li.ProductID,
+            so.SalesOrderID,
+            li.UnitsSold,
+            li.SalePrice
+        from FinanceDB.dbo.SalesOrderLineItem li
+            inner join FinanceDB.dbo.SalesOrder so on li.SalesOrderID = so.SalesOrderID
+            inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+        ),
+        fso_2(
+            SaleYear,
+            RegionID,
+            SalesPersonID,
+            ProductID,
+            SalesOrderID,
+            TotalSalesPrice,
+            TotalCost,
+            TotalRRP,
+            UniqueItems,
+            TotalItems,
+            GrossProfit,
+            PromotionRate
+            ) as
+        (
+        select
+            convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleYear,
+            sr.RegionID,
+            sr.SalesPersonID,
+            pc.ProductID,
+            so.SalesOrderID,
+            sum(li.SalePrice) as TotalSalesPrice,
+            sum(pc.ManufacturingPrice * li.UnitsSold) as TotalCost,
+            sum(pc.RRP * li.UnitsSold) as TotalRRP,
+            count(distinct li.ProductID) as UniqueItems,
+            sum(li.UnitsSold) as TotalItems,
+            round(sum(li.SalePrice - pc.ManufacturingPrice), 2) as GrossProfit,
+            sum(case when li.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate
+        from FinanceDB.dbo.ProductCost pc
+            inner join FinanceDB.dbo.SalesOrderLineItem li on pc.ProductID = li.ProductID
+            inner join FinanceDB.dbo.SalesOrder so on li.SalesOrderID = so.SalesOrderID
+            inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
+        group by
+            convert(int, convert(varchar(8), SalesOrderDate, 112)),
+            sr.RegionID,
+            sr.SalesPersonID,
+            pc.ProductID,
+            so.SalesOrderID
         )
-    -- select
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey,
-    --     productKey,
-    --     promotionKey,
-    --     so.SalesOrderID,
-    --     SalesOrderLineItemID,
-    --     SalesOrderLineNumber,
-    --     UnitsSold,
-    --     SalePrice,
-    --     ManufacturingPrice,
-    --     RRP,
-    --     Discount
-    -- from
-    --     FinanceDB.dbo.SalesOrder so
-    --     inner join staging_FinanceDW.dbo.DimDate dd on convert(int, convert(varchar(8), so.SalesOrderDate, 112)) = dd.[datekey]
-    --     inner join staging_FinanceDW.dbo.DimSalesPerson dsp on so.SalesPersonID = dsp.SalesPersonID
-    --     inner join staging_FinanceDW.dbo.DimSalesLocation dsl on so.SalesRegionID = dsl.SalesRegionID
-    --     inner join FinanceDB.dbo.SalesOrderLineItem sli on so.SalesOrderID = sli.SalesOrderID
-    --     inner join FinanceDB.dbo.Promotion pm on sli.PromotionID = pm.PromotionID
-    --     inner join FinanceDB.dbo.Product p on pm.ProductID = p.ProductID
-    --     inner join FinanceDB.dbo.ProductCost pc on p.ProductID = pc.ProductID
-    --     inner join staging_FinanceDW.dbo.DimProduct dp on dp.ProductID = p.ProductID
-    --     inner join staging_FinanceDW.dbo.DimPromotion dm on pm.PromotionID = dm.PromotionID
-    -- order by
-    --     [dateKey],
-    --     salespersonKey,
-    --     saleslocationKey,
-    --     productKey;
+        select
+            fso_1.SaleYear,
+            fso_1.RegionID,
+            fso_1.SalesPersonID,
+            fso_1.ProductID,
+            fso_1.SalesOrderID,
+            fso_1.UnitsSold,
+            fso_1.SalePrice,
+            fso_2.TotalSalesPrice,
+            fso_2.TotalCost,
+            fso_2.TotalRRP,
+            fso_2.UniqueItems,
+            fso_2.TotalItems,
+            fso_2.GrossProfit,
+            fso_2.PromotionRate,
+            round(case
+                when fso_2.TotalSalesPrice = 0 then 0
+                else (fso_2.TotalSalesPrice - fso_2.TotalCost) / fso_2.TotalSalesPrice
+                end, 2) as Margin,
+            round((fso_2.TotalRRP - fso_2.TotalSalesPrice) / (fso_2.TotalRRP), 2) as PercentageDiscount
+        from fso_1
+            inner join fso_2 on fso_1.SaleYear = fso_2.SaleYear
+                and fso_1.RegionID = fso_2.RegionID
+                and fso_1.SalesPersonID = fso_2.SalesPersonID
+                and fso_1.ProductID = fso_2.ProductID
+                and fso_1.SalesOrderID = fso_2.SalesOrderID
+        order by
+            fso_1.SaleYear,
+            fso_1.RegionID,
+            fso_1.SalesPersonID,
+            fso_1.ProductID,
+            fso_1.SalesOrderID
 
 end;
 go
