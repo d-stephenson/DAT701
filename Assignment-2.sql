@@ -505,7 +505,7 @@ begin
             SalePrice
             ) as
         (
-        select
+        select distinct
             convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleYear,
             sr.RegionID,
             so.SalesPersonID,
@@ -526,7 +526,6 @@ begin
             TotalSalesPrice,
             TotalCost,
             TotalRRP,
-            UniqueItems,
             TotalItems,
             GrossProfit,
             PromotionRate
@@ -541,7 +540,6 @@ begin
             sum(li.SalePrice) as TotalSalesPrice,
             sum(pc.ManufacturingPrice * li.UnitsSold) as TotalCost,
             sum(pc.RRP * li.UnitsSold) as TotalRRP,
-            count(distinct li.ProductID) as UniqueItems,
             sum(li.UnitsSold) as TotalItems,
             round(sum(li.SalePrice - pc.ManufacturingPrice), 2) as GrossProfit,
             sum(case when li.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate
@@ -556,38 +554,40 @@ begin
             pc.ProductID,
             so.SalesOrderID
         )
-        select
-            fso_1.SaleYear,
-            fso_1.RegionID,
-            fso_1.SalesPersonID,
-            fso_1.ProductID,
-            fso_1.SalesOrderID,
-            fso_1.UnitsSold,
-            fso_1.SalePrice,
-            fso_2.TotalSalesPrice,
-            fso_2.TotalCost,
-            fso_2.TotalRRP,
-            fso_2.UniqueItems,
-            fso_2.TotalItems,
-            fso_2.GrossProfit,
-            fso_2.PromotionRate,
-            round(case
-                when fso_2.TotalSalesPrice = 0 then 0
-                else (fso_2.TotalSalesPrice - fso_2.TotalCost) / fso_2.TotalSalesPrice
-                end, 2) as Margin,
-            round((fso_2.TotalRRP - fso_2.TotalSalesPrice) / (fso_2.TotalRRP), 2) as PercentageDiscount
-        from fso_1
-            inner join fso_2 on fso_1.SaleYear = fso_2.SaleYear
-                and fso_1.RegionID = fso_2.RegionID
-                and fso_1.SalesPersonID = fso_2.SalesPersonID
-                and fso_1.ProductID = fso_2.ProductID
-                and fso_1.SalesOrderID = fso_2.SalesOrderID
-        order by
-            fso_1.SaleYear,
-            fso_1.RegionID,
-            fso_1.SalesPersonID,
-            fso_1.ProductID,
-            fso_1.SalesOrderID
+        insert into staging_FinanceDW.dbo.FactSaleOrder
+            select
+                fso_1.SaleYear,
+                fso_1.RegionID,
+                fso_1.SalesPersonID,
+                fso_1.ProductID,
+                fso_1.SalesOrderID,
+                fso_1.UnitsSold,
+                fso_1.SalePrice,
+                fso_2.TotalSalesPrice,
+                fso_2.TotalCost,
+                fso_2.TotalRRP,
+                fso_2.TotalItems,
+                fso_2.GrossProfit,
+                fso_2.PromotionRate,
+                round(case
+                    when fso_2.TotalSalesPrice = 0 then 0
+                    else (fso_2.TotalSalesPrice - fso_2.TotalCost) / fso_2.TotalSalesPrice
+                    end, 2) as Margin,
+                round((fso_2.TotalRRP - fso_2.TotalSalesPrice) / (fso_2.TotalRRP), 2) as PercentageDiscount
+            from fso_1
+                inner join fso_2 on fso_1.SaleYear = fso_2.SaleYear
+                    and fso_1.RegionID = fso_2.RegionID
+                    and fso_1.SalesPersonID = fso_2.SalesPersonID
+                    and fso_1.ProductID = fso_2.ProductID
+                    and fso_1.SalesOrderID = fso_2.SalesOrderID
+            order by
+                fso_1.SaleYear,
+                fso_1.RegionID,
+                fso_1.SalesPersonID,
+                fso_1.ProductID,
+                fso_1.SalesOrderID;
+
+
 
 end;
 go
