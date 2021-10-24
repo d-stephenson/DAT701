@@ -509,7 +509,7 @@ begin
         sr.RegionID,
         so.SalesPersonID
     )
-    insert into staging_FinanceDW.dbo.FactSalePerformance
+    -- insert into staging_FinanceDW.dbo.FactSalePerformance
         select
             fsp_2.SalesYear,
             fsp_2.RegionID,
@@ -517,10 +517,10 @@ begin
             fsp_1.TotalAnnualKPI,
             fsp_1.TotalMonthlyKPI,
             fsp_2.TotalSalesPrice,
-            sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100) as AnnualPerformance,
-            sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100) / 12 as MonthlyPerformance    
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 2),
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100) / 12, 2)
         from fsp_1
-            inner join fsp_2 on year(fsp_1.SalesYear) = fsp_2.SalesYear
+            inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
                 and fsp_1.RegionID = fsp_2.RegionID
                 and fsp_1.SalesPersonID = fsp_2.SalesPersonID
         group by
@@ -635,7 +635,3 @@ exec fact_insert_into;
 go  
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-
-
