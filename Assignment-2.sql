@@ -146,16 +146,13 @@ begin
     create table FactSalePerformance
     (
         DateKey int not null foreign key references DimDate([dateKey]),
-        SalesPersonID smallint,
         RegionID smallint,
-        TotalYearSales_byRegion float,
-        TotalYearKPI float,
-        TotalYearSalesKPI_byRegion float,
-        YearPerformance int,
-        MonthPerformance int,
-        SP_RankPerformance int,
-        TotalYearProductSales_byRegion_bySP float,
-        TotalTearPromotion_byRegion_bySP float
+        SalesPersonID smallint,
+        TotalAnnualKPI float,
+        TotalMonthlylKPI float,
+        TotalSalesPrice float,
+        AnnualPerformance int,
+        MontlyhPerformance int
     );
 
     -- exec sp_helpindex 'FactSalePerformance';
@@ -510,15 +507,15 @@ begin
         so.SalesPersonID
     )
     -- insert into staging_FinanceDW.dbo.FactSalePerformance
-        select
+        select top 5
             fsp_2.SalesYear,
             fsp_2.RegionID,
             fsp_2.SalesPersonID,
             fsp_1.TotalAnnualKPI,
             fsp_1.TotalMonthlyKPI,
             fsp_2.TotalSalesPrice,
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 2),
-            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100) / 12, 2)
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalAnnualKPI) * 100), 5),
+            round(sum((fsp_2.TotalSalesPrice / fsp_1.TotalMonthlyKPI) * 100) / 12, 5)
         from fsp_1
             inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
                 and fsp_1.RegionID = fsp_2.RegionID
