@@ -509,7 +509,7 @@ begin
         sr.RegionID,
         so.SalesPersonID
     )
-    --insert into staging_FinanceDW.dbo.FactSalePerformance
+    insert into staging_FinanceDW.dbo.FactSalePerformance
         select
             fsp_2.SalesYear,
             fsp_2.RegionID,
@@ -530,11 +530,6 @@ begin
             fsp_1.TotalAnnualKPI,
             fsp_1.TotalMonthlyKPI,
             fsp_2.TotalSalesPrice;
-
-
-
-
-    ;
         
     -- Fact_SaleOrder
     with fso_1(
