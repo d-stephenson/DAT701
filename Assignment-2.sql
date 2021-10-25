@@ -529,7 +529,7 @@ begin
             fsp_2.AnnualSalesPrice,
             fsp_2.AnnualPerformance,
             fsp_3.MonthlySalesPrice,
-            round(sum((fsp_3.MonthlySalesPrice / fsp_1.TotalMonthlyKPI) * 100), 8)
+            sum((fsp_3.MonthlySalesPrice / fsp_1.TotalMonthlyKPI) * 100)
         from fsp_1
             inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
                 and fsp_1.RegionID = fsp_2.RegionID
