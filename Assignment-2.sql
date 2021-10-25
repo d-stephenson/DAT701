@@ -147,9 +147,9 @@ begin
         TotalAnnualKPI float,
         TotalMonthlylKPI float,
         AnnualSalesPrice float,
-        AnnualPerformance int,
+        AnnualPerformance bigint,
         MonthlySalesPrice float,
-        MonthlyPerformance int
+        MonthlyPerformance bigint
     );
 
     -- exec sp_helpindex 'FactSalePerformance';
@@ -174,9 +174,9 @@ begin
         TotalRRP float,
         TotalItems int,
         GrossProfit float,
-        PromotionRate int,
+        PromotionRate bigint,
         Margin float,
-        PercentageDiscount int
+        PercentageDiscount bigint
     );
 
     -- exec sp_helpindex 'FactSaleOrder';
