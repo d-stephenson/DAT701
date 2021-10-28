@@ -665,22 +665,25 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    -- DimProduct
-    merge into staging_FinanceDW.dbo.DimProduct as Target
-    using FinanceDB.dbo.Product p
-        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID as Source
-    on Target.ProductID = Source.ProductID
-    when matched then 
-    update set 
-        Target.ProductName = Source.ProductName,
-        Target.PromotionYear = Source.PromotionYear
-    when not matched then
-    insert (
-                ProductID,    
-                ProductName,
-                PromotionYear
-            )
-    values (
-                source.p.ProductName,
-                source.PromotionYear
-            );
+-- Upsert & Merge
+
+-- DimProduct
+merge into staging_FinanceDW.dbo.DimProduct as Target
+using FinanceDB.dbo.Product p
+    inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID as Source
+on Target.ProductID = Source.ProductID
+when matched then 
+update set 
+    Target.ProductName = Source.ProductName,
+    Target.PromotionYear = Source.PromotionYear
+when not matched then
+insert (
+            ProductID,    
+            ProductName,
+            PromotionYear
+        )
+values (
+            source.p.ProductName,
+            source.PromotionYear
+        );
+go
