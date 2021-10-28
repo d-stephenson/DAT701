@@ -666,25 +666,21 @@ go
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     -- DimProduct
-    merge into mytable as Target
-    using mytable2 as Source
-    on Target.id=Source.id
+    merge into staging_FinanceDW.dbo.DimProduct as Target
+    using FinanceDB.dbo.Product p
+        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID as Source
+    on Target.ProductID = Source.ProductID
     when matched then 
-    update set Target.name=Source.name,
-    Target.Salary = Source.Salary
+    update set 
+        Target.ProductName = Source.ProductName,
+        Target.PromotionYear = Source.PromotionYear
     when not matched then
-    insert (id,name,salary) values (Source.id,Source.name,Source.Salary);
-    
-    insert into staging_FinanceDW.dbo.DimProduct
-        (
-            ProductID,    
-            ProductName,
-            PromotionYear
-        )
-    select
-        p.ProductID,
-        ProductName,
-        PromotionYear
-    from FinanceDB.dbo.Product p
-        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
-
+    insert (
+                ProductID,    
+                ProductName,
+                PromotionYear
+            )
+    values (
+                source.p.ProductName,
+                source.PromotionYear
+            );
