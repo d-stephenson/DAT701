@@ -681,7 +681,7 @@ when not matched then
     values (
                 source.ProductName
             );
-    go
+go
 
 select * from DimProduct;
 go
