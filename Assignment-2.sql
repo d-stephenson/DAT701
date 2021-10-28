@@ -663,3 +663,28 @@ go
 select * from FactSaleOrder;
 go
 
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    -- DimProduct
+    merge into mytable as Target
+    using mytable2 as Source
+    on Target.id=Source.id
+    when matched then 
+    update set Target.name=Source.name,
+    Target.Salary = Source.Salary
+    when not matched then
+    insert (id,name,salary) values (Source.id,Source.name,Source.Salary);
+    
+    insert into staging_FinanceDW.dbo.DimProduct
+        (
+            ProductID,    
+            ProductName,
+            PromotionYear
+        )
+    select
+        p.ProductID,
+        ProductName,
+        PromotionYear
+    from FinanceDB.dbo.Product p
+        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
+
