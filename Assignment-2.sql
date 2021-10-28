@@ -670,18 +670,18 @@ go
 -- DimProduct
 merge into staging_FinanceDW.dbo.DimProduct as Target
 using FinanceDB.dbo.Product as Source
-on Target.ProductID = Source.ProductID
+    on Target.ProductID = Source.ProductID
 when matched then
-update set
-    Target.ProductName = Source.ProductName
+    update set
+        Target.ProductName = Source.ProductName
 when not matched then
-insert (   
-            ProductName
-        )
-values (
-            source.ProductName
-        );
-go
+    insert (   
+                ProductName
+            )
+    values (
+                source.ProductName
+            );
+    go
 
 select * from DimProduct;
 go
