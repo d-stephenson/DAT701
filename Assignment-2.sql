@@ -669,24 +669,26 @@ go
 
 -- Upsert - Merge Dim Tables
 
--- DimProduct
-merge into staging_FinanceDW.dbo.DimProduct as Target
-using FinanceDB.dbo.Product as Source
-    on Target.ProductID = Source.ProductID
-when matched then
-    update set
-        Target.ProductName = Source.ProductName
-when not matched then
-    insert (   
-                ProductName
-            )
-    values (
-                source.ProductName
-            );
-go
+-- Test Merge Procedure
 
-select * from DimProduct;
-go
+    -- DimProduct
+    merge into staging_FinanceDW.dbo.DimProduct as Target
+    using FinanceDB.dbo.Product as Source
+        on Target.ProductID = Source.ProductID
+    when matched then
+        update set
+            Target.ProductName = Source.ProductName
+    when not matched then
+        insert (   
+                    ProductName
+                )
+        values (
+                    source.ProductName
+                );
+    go
+
+    select * from DimProduct;
+    go
 
 -- DML merge tables
 
@@ -835,6 +837,6 @@ go
 
 -- Execute dim Insert Into procedure
 
-exec dim_insert_into;
+exec dim_merge;
 go
 
