@@ -705,14 +705,16 @@ begin
     (
         select
             p.ProductID,
-            ProductName,
-            PromotionYear
+            p.ProductName,
+            pm.PromotionYear
         from FinanceDB.dbo.Product p
-            inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID 
+            inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID
     )
     merge into staging_FinanceDW.dbo.DimProduct as Target
     using dp_cte as Source
         on Target.ProductID = Source.ProductID
+            and Target.ProductName = Source.ProductName
+            and Target.PromotionYear = Source.PromotionYear
     when matched then
         update set
             Target.ProductName = Source.ProductName,
@@ -800,8 +802,6 @@ begin
                     Source.DaysOfLeave,
                     Source.DaysOfSickLeave
                 );
-
-
 
 end;
 go
