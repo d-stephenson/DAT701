@@ -755,8 +755,10 @@ begin
             and Target.SegmentID = Source.SegmentID
     when matched then
         update set
-            Target.ProductName = Source.ProductName,
-            Target.PromotionYear = Source.PromotionYear
+            Target.CountryID = Source.CountryID,
+            Target.SegmentID = Source.SegmentID,
+            Target.CountryName = Source.CountryName,
+            Target.SegmentName = Source.SegmentName
     when not matched then
         insert (   
                     CountryID,
