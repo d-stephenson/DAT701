@@ -701,18 +701,31 @@ as
 begin
 
     -- DimProduct
-    insert into staging_FinanceDW.dbo.DimProduct
-        (
-            ProductID,    
+    with dp_cte (ProductID, ProductName,PromotionYear) as
+    (
+        select
+            p.ProductID,
             ProductName,
             PromotionYear
-        )
-    select
-        p.ProductID,
-        ProductName,
-        PromotionYear
-    from FinanceDB.dbo.Product p
-        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
+        from FinanceDB.dbo.Product p
+            inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID 
+    )
+    merge into staging_FinanceDW.dbo.DimProduct as Target
+    using dp_cte as Source
+        on Target.ProductID = Source.ProductID
+    when matched then
+        update set
+            Target.ProductName = Source.ProductName
+            Target.PromotionYear = Source.PromotionYear
+    when not matched then
+        insert (   
+                    ProductName,
+                    PromotionYear
+                )
+        values (
+                    source.ProductName,
+                    source.PromotionYear
+                );
 
     -- DimSalesLocation
     insert into staging_FinanceDW.dbo.DimSalesLocation
