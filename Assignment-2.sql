@@ -657,6 +657,8 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+-- Test Fact table speed
+
 select * from FactSalePerformance;
 go
 
@@ -665,7 +667,7 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Upsert & Merge
+-- Upsert - Merge Dim Tables
 
 -- DimProduct
 merge into staging_FinanceDW.dbo.DimProduct as Target
@@ -685,3 +687,82 @@ go
 
 select * from DimProduct;
 go
+
+-- DML merge tables
+
+-- Insert Into dimension tables procedure
+-- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
+
+drop procedure if exists dim_merge;
+go
+
+create procedure dim_merge
+as
+begin
+
+    -- DimProduct
+    insert into staging_FinanceDW.dbo.DimProduct
+        (
+            ProductID,    
+            ProductName,
+            PromotionYear
+        )
+    select
+        p.ProductID,
+        ProductName,
+        PromotionYear
+    from FinanceDB.dbo.Product p
+        inner join FinanceDB.dbo.Promotion pm on p.ProductID = pm.ProductID;
+
+    -- DimSalesLocation
+    insert into staging_FinanceDW.dbo.DimSalesLocation
+        (
+            RegionID,
+            CountryID,
+            SegmentID,
+            CountryName,
+            SegmentName
+        )
+    select
+        RegionID,
+        c.CountryID,
+        s.SegmentID,
+        CountryName,
+        SegmentName
+    from FinanceDB.dbo.Region r  
+        inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
+        inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
+        
+    -- DimSalesPerson
+    insert into staging_FinanceDW.dbo.DimSalesPerson
+        (
+            SalesPersonID,
+            FirstName,
+            LastName,
+            Gender,
+            HireDate,
+            DayOfBirth,
+            DaysOfLeave,
+            DaysOfSickLeave
+        )
+    select
+        SalesPersonID,
+        FirstName,
+        LastName,
+        Gender,
+        HireDate,
+        DayOfBirth,
+        DaysOfLeave,
+        DaysOfSickLeave
+    from FinanceDB.dbo.SalesPerson;
+
+end;
+go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Execute dim Insert Into procedure
+
+exec dim_insert_into;
+go
+
