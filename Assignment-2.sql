@@ -715,7 +715,7 @@ begin
         on Target.ProductID = Source.ProductID
     when matched then
         update set
-            Target.ProductName = Source.ProductName
+            Target.ProductName = Source.ProductName,
             Target.PromotionYear = Source.PromotionYear
     when not matched then
         insert (   
@@ -723,8 +723,8 @@ begin
                     PromotionYear
                 )
         values (
-                    source.ProductName,
-                    source.PromotionYear
+                    Source.ProductName,
+                    Source.PromotionYear
                 );
 
     -- DimSalesLocation
@@ -747,8 +747,18 @@ begin
         inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
         
     -- DimSalesPerson
-    insert into staging_FinanceDW.dbo.DimSalesPerson
-        (
+    with dsp_cte (            
+                    SalesPersonID,
+                    FirstName,
+                    LastName,
+                    Gender,
+                    HireDate,
+                    DayOfBirth,
+                    DaysOfLeave,
+                    DaysOfSickLeave
+                  ) as
+    (
+        select
             SalesPersonID,
             FirstName,
             LastName,
@@ -757,17 +767,41 @@ begin
             DayOfBirth,
             DaysOfLeave,
             DaysOfSickLeave
-        )
-    select
-        SalesPersonID,
-        FirstName,
-        LastName,
-        Gender,
-        HireDate,
-        DayOfBirth,
-        DaysOfLeave,
-        DaysOfSickLeave
-    from FinanceDB.dbo.SalesPerson;
+        from FinanceDB.dbo.SalesPerson
+    )
+    merge into staging_FinanceDW.dbo.DimSalesPerson as Target
+    using dsp_cte as Source
+        on Target.SalesPersonID = Source.SalesPersonID
+    when matched then
+        update set
+            Target.FirstName = Source.FirstName,
+            Target.LastName = Source.LastName,
+            Target.Gender = Source.Gender,
+            Target.HireDate = Source.HireDate,
+            Target.DayOfBirth = Source.DayOfBirth,
+            Target.DaysOfLeave = Source.DaysOfLeave,
+            Target.DaysOfSickLeave = Source.DaysOfSickLeave
+    when not matched then
+        insert (   
+                    FirstName,
+                    LastName,
+                    Gender,
+                    HireDate,
+                    DayOfBirth,
+                    DaysOfLeave,
+                    DaysOfSickLeave
+                )
+        values (
+                    Source.FirstName,
+                    Source.LastName,
+                    Source.Gender,
+                    Source.HireDate,
+                    Source.DayOfBirth,
+                    Source.DaysOfLeave,
+                    Source.DaysOfSickLeave
+                );
+
+
 
 end;
 go
