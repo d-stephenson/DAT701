@@ -701,7 +701,7 @@ as
 begin
 
     -- DimProduct
-    with dp_cte (ProductID, ProductName,PromotionYear) as
+    with dp_cte (ProductID, ProductName, PromotionYear) as
     (
         select
             p.ProductID,
@@ -730,23 +730,46 @@ begin
                 );
 
     -- DimSalesLocation
-    insert into staging_FinanceDW.dbo.DimSalesLocation
-        (
+    with dsl_cte (
+                    RegionID,
+                    CountryID,
+                    SegmentID,
+                    CountryName,
+                    SegmentName
+                ) as
+    (
+        select
             RegionID,
-            CountryID,
-            SegmentID,
+            c.CountryID,
+            s.SegmentID,
             CountryName,
             SegmentName
-        )
-    select
-        RegionID,
-        c.CountryID,
-        s.SegmentID,
-        CountryName,
-        SegmentName
-    from FinanceDB.dbo.Region r  
-        inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
-        inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID;
+        from FinanceDB.dbo.Region r  
+            inner join FinanceDB.dbo.Country c on r.CountryID = c.CountryID
+            inner join FinanceDB.dbo.Segment s on r.SegmentID = s.SegmentID
+    )
+    merge into staging_FinanceDW.dbo.DimSalesLocation as Target
+    using dsl_cte as Source
+        on Target.RegionID = Source.RegionID
+            and Target.CountryID = Source.CountryID
+            and Target.SegmentID = Source.SegmentID
+    when matched then
+        update set
+            Target.ProductName = Source.ProductName,
+            Target.PromotionYear = Source.PromotionYear
+    when not matched then
+        insert (   
+                    CountryID,
+                    SegmentID,
+                    CountryName,
+                    SegmentName
+                )
+        values (
+                    Source.CountryID,
+                    Source.SegmentID,
+                    Source.CountryName,
+                    Source.SegmentName
+                );
         
     -- DimSalesPerson
     with dsp_cte (            
