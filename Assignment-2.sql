@@ -661,16 +661,12 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- DML merge tables
+-- Merge tables
 
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Merge Into dimension tables procedure
-
-drop procedure if exists dim_merge;
+drop procedure if exists table_merge;
 go
 
-create procedure dim_merge
+create procedure table_merge
 as
 begin
 
@@ -801,27 +797,6 @@ begin
                     Source.DaysOfLeave,
                     Source.DaysOfSickLeave
                 );
-
-end;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Execute dim Merge Into procedure
-
-exec dim_merge;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Merge Into fact tables procedure
-
-drop procedure if exists dim_merge;
-go
-
-create procedure dim_merge
-as
-begin
 
     -- Fact_SalePerformance
     create view fact_sp as
@@ -1099,9 +1074,9 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Execute Fact Merge Into procedure
+-- Execute Merge Into procedure
 
-exec fact_merge;
+exec table_merge;
 go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
