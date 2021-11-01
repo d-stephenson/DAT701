@@ -265,15 +265,14 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- DML Inserting into tables
+-- Inserting into tables
 
--- Insert Into dimension tables procedure
 -- https://docs.oracle.com/database/121/DWHSG/transform.htm#DWHSG8313
 
-drop procedure if exists dim_insert_into;
+drop procedure if exists insert_into;
 go
 
-create procedure dim_insert_into
+create procedure insert_into
 as
 begin
 
@@ -412,38 +411,6 @@ begin
         DaysOfLeave,
         DaysOfSickLeave
     from FinanceDB.dbo.SalesPerson;
-
-end;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Execute dim Insert Into procedure
-
-exec dim_insert_into;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Insert Into fact tables procedure
-
---drop table if exists #FactOrder;
---go
-
---select * into #FactOrder from production_FinanceDW.dbo.FactOrder where 1 = 0;
---go
-
---select * from #FactOrder;
---go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
- 
-drop procedure if exists fact_insert_into;
-go
-
-create procedure fact_insert_into
-as
-begin
 
     -- Fact_SalePerformance
     with fsp_1(
@@ -650,10 +617,10 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Execute fact Insert Into procedure
+-- Execute Insert Into procedure
 
-exec fact_insert_into;
-go  
+exec insert_into;
+go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
