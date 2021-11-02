@@ -1054,10 +1054,10 @@ begin
             and Target.SalesPersonID = Source.SalesPersonID
             and Target.ProductID = Source.ProductID
             and Target.SalesOrderID = Source.SalesOrderID
+            and Target.UnitsSold = Source.UnitsSold,
+            and Target.SalePrice = Source.SalePrice
     when matched then
         update set
-            Target.UnitsSold = Source.UnitsSold,
-            Target.SalePrice = Source.SalePrice,
             Target.TotalSalesPrice = Source.TotalSalesPrice,
             Target.TotalCost = Source.TotalCost,
             Target.TotalRRP = Source.TotalRRP,
@@ -1068,8 +1068,6 @@ begin
             Target.PercentageDiscount = Source.PercentageDiscount
     when not matched then
         insert (   
-                    UnitsSold,
-                    SalePrice,
                     TotalSalesPrice,
                     TotalCost,
                     TotalRRP,
@@ -1080,8 +1078,6 @@ begin
                     PercentageDiscount
                 )
         values (
-                    Source.UnitsSold,
-                    Source.SalePrice,
                     Source.TotalSalesPrice,
                     Source.TotalCost,
                     Source.TotalRRP,
