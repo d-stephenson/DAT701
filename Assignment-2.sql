@@ -1118,4 +1118,3 @@ grant select on FactSaleOrder to data_Analyst_Manager;
 grant select on FactSalePerformance to data_Analyst_Manager;
 
 -- add user login and role to FinanceDB giving access to data analyst DW to read FinanceDB to create DW, but no access to update FinanceDB
-
