@@ -1100,7 +1100,29 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Create User Login and assign permissions
+-- Create User Login and assign permissions for Data Warehouse Developer to read only access FinanceDB
+
+use FinanceDB;
+
+create login data_Warehouse_Developer with password = 'P@ssword1';
+
+create user data_Warehouse_Developer for login data_Warehouse_Developer;
+
+grant select on FinanceDB.dbo.Country to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.Product to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.ProductCost to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.Promotion to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.Region to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.SalesKPI to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.SalesOrder to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.SalesOrderLineItem to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.SalesPerson to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.SalesRegion to data_Warehouse_Developer;
+grant select on FinanceDB.dbo.Segment to data_Warehouse_Developer;
+
+-- Create User Login and assign permissions for Data Analyst Manager to read only access FinanceDW from PowerBI
+
+use production_FinanceDW;
 
 create login data_Analyst_Manager with password = 'P@ssword1';
 
@@ -1112,5 +1134,3 @@ grant select on DimSalesLocation to data_Analyst_Manager;
 grant select on DimSalesPerson to data_Analyst_Manager;
 grant select on FactSaleOrder to data_Analyst_Manager;
 grant select on FactSalePerformance to data_Analyst_Manager;
-
--- add user login and role to FinanceDB giving access to data analyst DW to read FinanceDB to create DW, but no access to update FinanceDB
