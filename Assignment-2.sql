@@ -743,6 +743,9 @@ go
     go
 
     -- Fact_SaleOrder
+    drop view fact_so;
+    go
+
     create view fact_so as
          with fso_1(
                     SaleYear,
@@ -831,13 +834,7 @@ go
                             and fso_1.RegionID = fso_2.RegionID
                             and fso_1.SalesPersonID = fso_2.SalesPersonID
                             and fso_1.ProductID = fso_2.ProductID
-                            and fso_1.SalesOrderID = fso_2.SalesOrderID
-                    order by
-                        fso_1.SaleYear,
-                        fso_1.RegionID,
-                        fso_1.SalesPersonID,
-                        fso_1.ProductID,
-                        fso_1.SalesOrderID;
+                            and fso_1.SalesOrderID = fso_2.SalesOrderID;
         go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -984,28 +981,29 @@ begin
     using fact_sp as Source
         on Target.DateKey = Source.SalesDate
             and Target.SalesPersonID = Source.SalesPersonID
+            and Target.RegionID = Source.RegionID
     when matched then
         update set
             Target.TotalAnnualKPI = Source.TotalAnnualKPI,
-            Target.TotalMonthlylKPI = Source.TotalMonthlyKPI,
             Target.AnnualSalesPrice = Source.AnnualSalesPrice,
             Target.AnnualPerformance = Source.AnnualPerformance,
+            Target.TotalMonthlylKPI = Source.TotalMonthlyKPI,
             Target.MonthlySalesPrice = Source.MonthlySalesPrice,
             Target.MonthlyPerformance = Source.MonthlyPerformance
     when not matched then
         insert (   
                     TotalAnnualKPI,
-                    TotalMonthlylKPI,
                     AnnualSalesPrice,
                     AnnualPerformance,
+                    TotalMonthlylKPI,
                     MonthlySalesPrice,
                     MonthlyPerformance
                 )
         values (
                     Source.TotalAnnualKPI,
-                    Source.TotalMonthlyKPI,
                     Source.AnnualSalesPrice,
                     Source.AnnualPerformance,
+                    Source.TotalMonthlyKPI,
                     Source.MonthlySalesPrice,
                     Source.MonthlyPerformance
                 );
@@ -1121,4 +1119,3 @@ grant select on FactSalePerformance to data_Analyst_Manager;
     order by
         YearCalendar;
     go
-
