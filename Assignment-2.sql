@@ -141,13 +141,11 @@ begin
     create table FactSalePerformance
     (
         DateKey int not null foreign key references DimDate([dateKey]),
-        SalesMonth int,
-        RegionID smallint,
         SalesPersonID smallint,
         TotalAnnualKPI float,
-        TotalMonthlylKPI float,
         AnnualSalesPrice float,
         AnnualPerformance float,
+        TotalMonthlylKPI float,
         MonthlySalesPrice float,
         MonthlyPerformance float
     );
@@ -158,22 +156,22 @@ begin
 
     create nonclustered index idx_fsp_group
         on FactSalePerformance
-            (SalesPersonID, RegionID);
+            (SalesPersonID);
 
     create table FactSaleOrder
     (
         DateKey int not null foreign key references DimDate([dateKey]),
+        SalesOrderID bigint,
         RegionID smallint,
         SalesPersonID smallint,
         ProductID tinyint,
-        SalesOrderID bigint,
         UnitsSold smallint,
         SalePrice float,
         TotalSalesPrice float,
         TotalCost float,
+        GrossProfit float,
         TotalRRP float,
         TotalItems int,
-        GrossProfit float,
         PromotionRate int,
         Margin float,
         PercentageDiscount float
@@ -560,11 +558,11 @@ begin
             sr.SalesPersonID,
             pc.ProductID,
             so.SalesOrderID,
-            sum(li.SalePrice) as TotalSalesPrice,
+            sum(li.SalePrice * li.UnitsSold) as TotalSalesPrice,
             sum(pc.ManufacturingPrice * li.UnitsSold) as TotalCost,
             sum(pc.RRP * li.UnitsSold) as TotalRRP,
             sum(li.UnitsSold) as TotalItems,
-            round(sum(li.SalePrice - pc.ManufacturingPrice), 2) as GrossProfit,
+            sum((li.SalePrice - pc.ManufacturingPrice) * li.UnitsSold) as GrossProfit,
             sum(case when li.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
             round(case
                 when sum(SalePrice) = 0 then 0
@@ -582,7 +580,7 @@ begin
             pc.ProductID,
             so.SalesOrderID
         )
-        insert into production_FinanceDW.dbo.FactSaleOrder
+       insert into production_FinanceDW.dbo.FactSaleOrder
             select
                 fso_1.SaleYear,
                 fso_1.RegionID,
@@ -593,9 +591,9 @@ begin
                 fso_1.SalePrice,
                 fso_2.TotalSalesPrice,
                 fso_2.TotalCost,
+                fso_2.GrossProfit,
                 fso_2.TotalRRP,
                 fso_2.TotalItems,
-                fso_2.GrossProfit,
                 fso_2.PromotionRate,
                 fso_2.Margin,
                 fso_2.PercentageDiscount
@@ -632,98 +630,67 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Upsert & Merge Testing
+-- Upsert & Merge Testing with DimProduct
 
--- DimProduct
-merge into production_FinanceDW.dbo.DimProduct as Target
-using FinanceDB.dbo.Product as Source
-    on Target.ProductID = Source.ProductID
-when matched then
-    update set
-        Target.ProductName = Source.ProductName
-when not matched then
-    insert (   
-                ProductName
-            )
-    values (
-                Source.ProductName
-            );
-go
+--merge into production_FinanceDW.dbo.DimProduct as Target
+--using FinanceDB.dbo.Product as Source
+--    on Target.ProductID = Source.ProductID
+--when matched then
+--    update set
+--        Target.ProductName = Source.ProductName
+--when not matched then
+--    insert (   
+--                ProductName
+--            )
+--    values (
+--                Source.ProductName
+--            );
+--go
 
-select * from DimProduct;
-go
+--select * from DimProduct;
+--go
 
--- Test merge procedure
-update FinanceDB.dbo.Product
-set ProductName = 'Carretera'
-where ProductName = 'Carretera_v2';
-go
+---- Test merge procedure
+--update FinanceDB.dbo.Product
+--set ProductName = 'Carretera'
+--where ProductName = 'Carretera_v2';
+--go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Views for fact tables 
-
-drop procedure if exists fact_views;
-go
-
-create procedure fact_views
-as
-begin
+-- Views for fact tables
 
     -- Fact_SalePerformance
+    drop view fact_sp;
+    go
+
     create view fact_sp as
         with fsp_1(
                     SalesYear,
-                    RegionID,
                     SalesPersonID,
+                    AnnualSalesPrice,
                     TotalAnnualKPI,
                     TotalMonthlyKPI
                     ) as
             (
             select
                 SalesYear,
-                RegionID,
                 sp.SalesPersonID,
+                sum(SalePrice) as AnnualSalesPrice,
                 sum(KPI) as TotalAnnualKPI,
                 sum(KPI) / 12 as TotalMonthlyKPI
             from
                 FinanceDB.dbo.SalesKPI sk
                     inner join FinanceDB.dbo.SalesPerson sp on sk.SalesPersonID = sp.SalesPersonID
-                    inner join FinanceDB.dbo.SalesRegion sr on sk.SalesPersonID = sr.SalesPersonID
                     inner join FinanceDB.dbo.SalesOrder so on sp.SalesPersonID = so.SalesPersonID
                     inner join FinanceDB.dbo.SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
             group by
                 SalesYear,
-                RegionID,
                 sp.SalesPersonID
             ),
         fsp_2 (
                 SalesYear,
-                RegionID,
-                SalesPersonID,
-                AnnualSalesPrice,
-                AnnualPerformance
-                ) as
-            (
-            select
-                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SalesYear,
-                sr.RegionID,
-                so.SalesPersonID,
-                sum(SalePrice) as TotalSalesPrice,
-                round(sum((SalePrice / KPI) * 100), 8) as AnnualPerformance
-            from FinanceDB.dbo.SalesOrder so
-                inner join FinanceDB.dbo.SalesKPI sk on so.SalesPersonID = sk.SalesPersonID
-                inner join FinanceDB.dbo.SalesRegion sr on so.SalesPersonID = sr.SalesPersonID
-                inner join FinanceDB.dbo.SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
-            group by
-                convert(int, convert(varchar(8), SalesOrderDate, 112)),
-                sr.RegionID,
-                so.SalesPersonID
-            ),
-        fsp_3 (
-                SalesYear,
                 SalesMonth,
-                RegionID,
                 SalesPersonID,
                 MonthlySalesPrice
                 ) as
@@ -731,52 +698,55 @@ begin
             select
                 year(SalesOrderDate) as SalesYear,
                 month(SalesOrderDate) as SalesMonth,
-                sr.RegionID,
                 so.SalesPersonID,
                 sum(SalePrice) as MonthlySalesPrice
             from FinanceDB.dbo.SalesOrder so
                 inner join FinanceDB.dbo.SalesKPI sk on so.SalesPersonID = sk.SalesPersonID
-                inner join FinanceDB.dbo.SalesRegion sr on so.SalesPersonID = sr.SalesPersonID
                 inner join FinanceDB.dbo.SalesOrderLineItem li on so.SalesOrderID = li.SalesOrderID
             group by
                 year(SalesOrderDate),
                 month(SalesOrderDate),
-                sr.RegionID,
                 so.SalesPersonID
+            ),
+        fsp_3 (
+                SalesDate,
+                SalesYear,
+                SalesMonth
+                ) as
+            (
+            select distinct
+                concat(year(SalesOrderDate), RIGHT('0' + CONVERT(VARCHAR(2), Month( SalesOrderDate )), 2), '01') as SalesDate,
+                year(SalesOrderDate) as SalesYear,
+                month(SalesOrderDate) as SalesMonth
+            from FinanceDB.dbo.SalesOrder
             )
         select
-            fsp_2.SalesYear,
-            fsp_3.SalesMonth,
-            fsp_2.RegionID,
-            fsp_2.SalesPersonID,
+            fsp_3.SalesDate,
+            fsp_1.SalesPersonID,
             fsp_1.TotalAnnualKPI,
+            fsp_1.AnnualSalesPrice,
+            sum((fsp_1.AnnualSalesPrice / fsp_1.TotalAnnualKPI) * 100) as AnnualPerformance,
             fsp_1.TotalMonthlyKPI,
-            fsp_2.AnnualSalesPrice,
-            fsp_2.AnnualPerformance,
-            fsp_3.MonthlySalesPrice,
-            sum((fsp_3.MonthlySalesPrice / fsp_1.TotalMonthlyKPI) * 100) as MonthlyPerformance
+            fsp_2.MonthlySalesPrice,
+            sum((fsp_2.MonthlySalesPrice / fsp_1.TotalMonthlyKPI) * 100) as MonthlyPerformance
         from fsp_1
-            inner join fsp_2 on fsp_1.SalesYear =  left(fsp_2.SalesYear, 4)
-                and fsp_1.RegionID = fsp_2.RegionID
+            inner join fsp_2 on fsp_1.SalesYear =  fsp_2.SalesYear
                 and fsp_1.SalesPersonID = fsp_2.SalesPersonID
-            inner join fsp_3 on fsp_1.SalesYear =  left(fsp_3.SalesYear, 4)
-                and fsp_1.RegionID = fsp_3.RegionID
-                and fsp_1.SalesPersonID = fsp_3.SalesPersonID
+            inner join fsp_3 on fsp_2.SalesYear = fsp_3.SalesYear
+                and fsp_2.SalesMonth = fsp_3.SalesMonth
         group by
-            fsp_2.SalesYear,
-            fsp_3.SalesMonth,
-            fsp_2.RegionID,
-            fsp_2.SalesPersonID,
+            fsp_3.SalesDate,
+            fsp_1.SalesPersonID,
             fsp_1.TotalAnnualKPI,
+            fsp_1.AnnualSalesPrice,
             fsp_1.TotalMonthlyKPI,
-            fsp_2.AnnualSalesPrice,
-            fsp_2.AnnualPerformance,
-            fsp_3.MonthlySalesPrice;
+            fsp_2.MonthlySalesPrice;
+    go
 
     -- Fact_SaleOrder
     create view fact_so as
         with fso_1(
-                SaleYear,
+                SaleDate,
                 RegionID,
                 SalesPersonID,
                 ProductID,
@@ -786,7 +756,7 @@ begin
                 ) as
             (
             select distinct
-                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleYear,
+                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleDate,
                 sr.RegionID,
                 so.SalesPersonID,
                 li.ProductID,
@@ -798,32 +768,32 @@ begin
                 inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
             ),
             fso_2(
-                SaleYear,
-                RegionID,
-                SalesPersonID,
-                ProductID,
+                SaleDate,
                 SalesOrderID,
+                SalesPersonID,
+                RegionID,
+                ProductID,
                 TotalSalesPrice,
                 TotalCost,
+                GrossProfit,
                 TotalRRP,
                 TotalItems,
-                GrossProfit,
                 PromotionRate,
                 Margin,
                 PercentageDiscount
                 ) as
             (
             select
-                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleYear,
-                sr.RegionID,
+                convert(int, convert(varchar(8), SalesOrderDate, 112)) as SaleDate,
                 sr.SalesPersonID,
+                sr.RegionID,
                 pc.ProductID,
                 so.SalesOrderID,
-                sum(li.SalePrice) as TotalSalesPrice,
+                sum(li.SalePrice * li.UnitsSold) as TotalSalesPrice,
                 sum(pc.ManufacturingPrice * li.UnitsSold) as TotalCost,
+                sum((li.SalePrice - pc.ManufacturingPrice) * li.UnitsSold) as GrossProfit,
                 sum(pc.RRP * li.UnitsSold) as TotalRRP,
                 sum(li.UnitsSold) as TotalItems,
-                round(sum(li.SalePrice - pc.ManufacturingPrice), 2) as GrossProfit,
                 sum(case when li.PromotionID = 0 then 0.0 else 1.0 end) / count(*) as PromotionRate,
                 round(case
                     when sum(SalePrice) = 0 then 0
@@ -836,43 +806,38 @@ begin
                 inner join FinanceDB.dbo.SalesRegion sr on so.SalesRegionID = sr.SalesRegionID
             group by
                 convert(int, convert(varchar(8), SalesOrderDate, 112)),
-                sr.RegionID,
-                sr.SalesPersonID,
+                so.SalesOrderID,
                 pc.ProductID,
-                so.SalesOrderID
+                sr.RegionID,
+                sr.SalesPersonID
             )
             select
-                fso_1.SaleYear,
+                fso_1.SaleDate,
+                fso_1.SalesOrderID,
                 fso_1.RegionID,
                 fso_1.SalesPersonID,
                 fso_1.ProductID,
-                fso_1.SalesOrderID,
                 fso_1.UnitsSold,
                 fso_1.SalePrice,
                 fso_2.TotalSalesPrice,
                 fso_2.TotalCost,
+                fso_2.GrossProfit,
                 fso_2.TotalRRP,
                 fso_2.TotalItems,
-                fso_2.GrossProfit,
                 fso_2.PromotionRate,
                 fso_2.Margin,
                 fso_2.PercentageDiscount
             from fso_1
-                inner join fso_2 on fso_1.SaleYear = fso_2.SaleYear
-                    and fso_1.RegionID = fso_2.RegionID
+                inner join fso_2 on fso_1.SaleDate = fso_2.SaleDate
                     and fso_1.SalesPersonID = fso_2.SalesPersonID
+                    and fso_1.RegionID = fso_2.RegionID
                     and fso_1.ProductID = fso_2.ProductID
-                    and fso_1.SalesOrderID = fso_2.SalesOrderID;
-
-end;
-go
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
--- Execute Fact Table Views procedure
-
-exec fact_views;
-go
+                    and fso_1.SalesOrderID = fso_2.SalesOrderID
+            order by
+                fso_1.SaleDate,
+                fso_1.SalesOrderID,
+                fso_1.SalesPersonID;
+        go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -1016,9 +981,7 @@ begin
     -- Fact_SalePerformance
     merge into production_FinanceDW.dbo.FactSalePerformance as Target
     using fact_sp as Source
-        on Target.DateKey = Source.SalesYear
-            and Target.SalesMonth = Source.SalesMonth
-            and Target.RegionID = Source.RegionID
+        on Target.DateKey = Source.SalesDate
             and Target.SalesPersonID = Source.SalesPersonID
     when matched then
         update set
@@ -1054,7 +1017,7 @@ begin
             and Target.SalesPersonID = Source.SalesPersonID
             and Target.ProductID = Source.ProductID
             and Target.SalesOrderID = Source.SalesOrderID
-            and Target.UnitsSold = Source.UnitsSold,
+            and Target.UnitsSold = Source.UnitsSold
             and Target.SalePrice = Source.SalePrice
     when matched then
         update set
@@ -1134,3 +1097,27 @@ grant select on DimSalesLocation to data_Analyst_Manager;
 grant select on DimSalesPerson to data_Analyst_Manager;
 grant select on FactSaleOrder to data_Analyst_Manager;
 grant select on FactSalePerformance to data_Analyst_Manager;
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Reporting Views
+
+-- Reporting View 1 | Total Yearly KPI by Sales Rep, Country, & Segment
+
+
+    select distinct
+        YearCalendar,
+        concat(FirstName, ' ', LastName) as SalesRepName,
+        CountryName,
+        SegmentName,
+        TotalAnnualKPI--,
+        --AnnualSalesPrice,
+        --AnnualPerformance
+    from FactSalePerformance fsp
+        inner join DimDate dd on fsp.DateKey = dd.DateKey
+        inner join DimSalesPerson sp on fsp.SalesPersonID = sp.SalesPersonID
+        inner join DimSalesLocation sl on fsp.RegionID = sl.RegionID
+    order by
+        YearCalendar;
+    go
+
