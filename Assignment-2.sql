@@ -1103,15 +1103,15 @@ grant select on FactSalePerformance to data_Analyst_Manager;
 
 -- Reporting View 1 | Total Yearly KPI by Sales Rep, Country, & Segment
 
-
+create view Sales_Performance
     select distinct
         YearCalendar,
         concat(FirstName, ' ', LastName) as SalesRepName,
         CountryName,
         SegmentName,
-        TotalAnnualKPI--,
-        --AnnualSalesPrice,
-        --AnnualPerformance
+        TotalAnnualKPI,
+        AnnualSalesPrice,
+        AnnualPerformance
     from FactSalePerformance fsp
         inner join DimDate dd on fsp.DateKey = dd.DateKey
         inner join DimSalesPerson sp on fsp.SalesPersonID = sp.SalesPersonID
