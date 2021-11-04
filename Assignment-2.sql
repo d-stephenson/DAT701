@@ -1103,13 +1103,16 @@ grant select on FactSalePerformance to data_Analyst_Manager;
 
 -- Reporting View 1 | Total Yearly KPI by Sales Rep, Country, & Segment
 
-create view Sales_Performance
+drop view Sales_Performance;
+go
+
+create view Sales_Performance as
     select distinct
         YearCalendar,
         concat(FirstName, ' ', LastName) as SalesRepName,
         CountryName,
         SegmentName,
-        TotalAnnualKPI,
+        TotalMonthlylKPI,
         AnnualSalesPrice,
         AnnualPerformance
     from FactSalePerformance fsp
@@ -1117,5 +1120,34 @@ create view Sales_Performance
         inner join DimSalesPerson sp on fsp.SalesPersonID = sp.SalesPersonID
         inner join DimSalesLocation sl on fsp.RegionID = sl.RegionID
     order by
-        YearCalendar;
-    go
+        YearCalendar,
+        concat(FirstName, ' ', LastName),
+        CountryName,
+        SegmentName;
+go
+
+-- Reporting View 2 | Yearly Sales Orders by Sales Representative
+
+drop view Sales_Orders;
+go
+
+create view Sales_Orders as
+    select
+        FullDate,
+        SalesOrderID,
+        concat(FirstName, ' ', LastName) as SalesRepresentative,
+        TotalSalesPrice,
+        TotalCost,
+        TotalRRP,
+        TotalItems,
+        Margin,
+        PercentageDiscount
+    from FactSaleOrder fso
+        inner join DimDate dd on fso.DateKey = dd.DateKey
+        inner join DimSalesPerson sp on fso.SalesPersonID = sp.SalesPersonID
+        inner join DimSalesLocation sl on fso.RegionID = sl.RegionID
+    order by
+        FullDate,
+        SalesOrderID,
+        concat(FirstName, ' ', LastName);
+go
