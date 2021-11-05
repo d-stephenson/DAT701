@@ -157,7 +157,7 @@ begin
 
     create nonclustered index idx_fsp_group
         on FactSalePerformance
-            (SalesPersonID);
+            (SalesPersonID, RegionID);
 
     create table FactSaleOrder
     (
@@ -1156,6 +1156,20 @@ order by
     CountryName desc,
     SegmentName desc;
 
+-- Indexing for View 1
+
+exec sp_helpindex FactSalePerformance;
+go
+
+drop index if exists ix_fsp_view1 on FactSalePerformance;
+go
+
+create nonclustered index ix_fsp_view1
+    on FactSalePerformance
+        (DateKey asc, SalesPersonID, RegionID) include (AnnualSalesPrice, AnnualPerformance)
+    with (data_compression = row);;
+go
+
 -- Reporting View 2 | Yearly Sales Orders by Sales Representative
 
 drop view Sales_Orders;
@@ -1184,3 +1198,17 @@ order by
     FullDate,
     SalesOrderID,
     SalesRepresentative;
+
+    -- Indexing for View 2
+
+exec sp_helpindex FactSaleOrder;
+go
+
+drop index if exists ix_fso_view2 on FactSaleOrder;
+go
+
+create nonclustered index ix_fso_view2
+    on FactSaleOrder
+        (DateKey, SalesOrderID) -- include (TotalSalesPrice, TotalCost, TotalRRP)
+    with (data_compression = row);;
+go
