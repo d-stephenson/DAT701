@@ -1137,22 +1137,24 @@ go
 create view Sales_Performance as
     select distinct
         YearCalendar,
-        concat(FirstName, ' ', LastName) as SalesRepName,
+        concat(FirstName, ' ', LastName) as SalesRepresentative,
         CountryName,
         SegmentName,
-        TotalMonthlylKPI,
+        TotalAnnualKPI,
         AnnualSalesPrice,
         AnnualPerformance
     from FactSalePerformance fsp
         inner join DimDate dd on fsp.DateKey = dd.DateKey
         inner join DimSalesPerson sp on fsp.SalesPersonID = sp.SalesPersonID
-        inner join DimSalesLocation sl on fsp.RegionID = sl.RegionID
-    order by
-        YearCalendar,
-        concat(FirstName, ' ', LastName),
-        CountryName,
-        SegmentName;
+        inner join DimSalesLocation sl on fsp.RegionID = sl.RegionID;
 go
+
+select * from Sales_Performance
+order by
+    YearCalendar,
+    SalesRepresentative desc,
+    CountryName desc,
+    SegmentName desc;
 
 -- Reporting View 2 | Yearly Sales Orders by Sales Representative
 
@@ -1173,9 +1175,12 @@ create view Sales_Orders as
     from FactSaleOrder fso
         inner join DimDate dd on fso.DateKey = dd.DateKey
         inner join DimSalesPerson sp on fso.SalesPersonID = sp.SalesPersonID
-        inner join DimSalesLocation sl on fso.RegionID = sl.RegionID
-    order by
-        FullDate,
-        SalesOrderID,
-        concat(FirstName, ' ', LastName);
+        inner join DimSalesLocation sl on fso.RegionID = sl.RegionID;
+
 go
+
+select * from Sales_Orders
+order by
+    FullDate,
+    SalesOrderID,
+    SalesRepresentative;
