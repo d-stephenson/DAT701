@@ -1172,16 +1172,21 @@ go
 
 -- Reporting View 2 | Yearly Sales Orders by Sales Representative
 
+
 drop view Sales_Orders;
 go
 
 create view Sales_Orders as
     select
         FullDate,
+        MonthNameOfYear,
+        MonthNumberOfYear,
+        YearCalendar,
         SalesOrderID,
         concat(FirstName, ' ', LastName) as SalesRepresentative,
         TotalSalesPrice,
         TotalCost,
+        GrossProfit,
         TotalRRP,
         TotalItems,
         Margin,
