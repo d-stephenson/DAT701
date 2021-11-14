@@ -1275,3 +1275,32 @@ create nonclustered index ix_fso_view2
         (DateKey, SalesOrderID) -- include (TotalSalesPrice, TotalCost, TotalRRP)
     with (data_compression = row);;
 go
+
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+-- Execute stored procedure overnight
+
+drop procedure if exists Run_Merge;
+go
+
+create procedure Run_Merge as
+begin
+    set nocount on;
+    --  For executing the stored procedure at 11:00 P.M
+    declare @delayTime nvarchar(50)
+    set @delayTime = '23:00'
+
+    while 1 = 1
+    begin
+        waitfor time @delayTime
+        begin
+            --Name for the stored proceduce you want to call on regular bases
+            execute [production_FinanceDW].[dbo].[table_merge];
+        end
+    end
+end;
+go
+
+sp_procoption   @ProcName = 'Run_Merge',
+                @OptionName = 'startup',
+                @OptionValue = 'on'
