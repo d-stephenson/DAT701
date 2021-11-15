@@ -696,29 +696,29 @@ go
 
 -- Upsert & Merge Testing with DimProduct
 
---merge into production_FinanceDW.dbo.DimProduct as Target
---using FinanceDB.dbo.Product as Source
---    on Target.ProductID = Source.ProductID
---when matched then
---    update set
---        Target.ProductName = Source.ProductName
---when not matched then
---    insert (   
---                ProductName
---            )
---    values (
---                Source.ProductName
---            );
---go
+    merge into production_FinanceDW.dbo.DimProduct as Target
+    using FinanceDB.dbo.Product as Source
+       on Target.ProductID = Source.ProductID
+    when matched then
+       update set
+           Target.ProductName = Source.ProductName
+    when not matched then
+       insert (   
+                   ProductName
+               )
+       values (
+                   Source.ProductName
+               );
+    go
 
---select * from DimProduct;
---go
+    select * from DimProduct;
+    go
 
----- Test merge procedure
---update FinanceDB.dbo.Product
---set ProductName = 'Carretera'
---where ProductName = 'Carretera_v2';
---go
+    -- Test merge procedure
+    update FinanceDB.dbo.Product
+    set ProductName = 'Carretera'
+    where ProductName = 'Carretera_v2';
+    go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -1275,7 +1275,7 @@ go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
--- Execute stored procedure overnight
+-- Execute stored procedure | Schedule overnight
 
 drop procedure if exists Run_Merge;
 go
