@@ -1223,7 +1223,7 @@ go
 create nonclustered index ix_fsp_view1
     on FactSalePerformance
         (DateKey asc, SalesPersonID, RegionID) include (AnnualSalesPrice, AnnualPerformance)
-    with (data_compression = row);;
+    with (data_compression = row);
 go
 
 -- Reporting View 2 | Yearly Sales Orders by Sales Representative
@@ -1270,7 +1270,7 @@ go
 create nonclustered index ix_fso_view2
     on FactSaleOrder
         (DateKey, SalesOrderID) -- include (TotalSalesPrice, TotalCost, TotalRRP)
-    with (data_compression = row);;
+    with (data_compression = row);
 go
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
